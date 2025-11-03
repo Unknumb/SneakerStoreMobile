@@ -8,12 +8,14 @@ SneakerStoreMobile es una tienda de zapatillas deportivas diseñada para ofrecer
 
 ## ✨ Características
 
+- **Sistema de Autenticación**: Login con validaciones, registro de usuarios y acceso como invitado
 - **Catálogo de Productos**: Visualización en cuadrícula de zapatillas con imágenes, nombres y precios
 - **Detalles del Producto**: Vista detallada con descripción completa y opciones de compra
 - **Carrito de Compras**: Gestión de productos seleccionados con contador de cantidades
 - **Navegación Intuitiva**: Sistema de navegación con drawer lateral y barra superior
 - **Diseño Responsivo**: Interfaz moderna y adaptable con Material Design 3
 - **Carga de Imágenes**: Visualización eficiente de imágenes desde URLs remotas
+- **Persistencia de Sesión**: Mantiene la sesión del usuario usando DataStore
 
 ## 🛠️ Tecnologías y Arquitectura
 
@@ -43,27 +45,33 @@ SneakerStoreMobile es una tienda de zapatillas deportivas diseñada para ofrecer
 ```
 app/
 ├── data/
-│   └── local/
-│       └── MockData.kt          # Datos simulados de productos
+│   ├── local/
+│   │   └── MockData.kt              # Datos simulados de productos
+│   ├── UserPreferencesRepository.kt # Gestión de sesión con DataStore
+│   └── UserRepository.kt            # Repositorio de usuarios
 ├── model/
-│   └── Product.kt               # Modelo de datos de producto
+│   ├── Product.kt                   # Modelo de datos de producto
+│   └── User.kt                      # Modelo de usuario y credenciales
 ├── navigation/
-│   └── NavGraph.kt              # Configuración de navegación
+│   └── NavGraph.kt                  # Configuración de navegación
 ├── ui/
 │   ├── components/
-│   │   ├── AppSneakerTopBar.kt  # Barra superior personalizada
-│   │   └── AppWithSideDrawer.kt # Drawer lateral de navegación
+│   │   ├── AppSneakerTopBar.kt      # Barra superior personalizada
+│   │   └── AppWithSideDrawer.kt     # Drawer lateral con info de usuario
 │   ├── screens/
-│   │   ├── HomeScreen.kt        # Pantalla principal con catálogo
-│   │   ├── ProductDetailScreen.kt # Detalles del producto
-│   │   └── CartScreen.kt        # Pantalla del carrito
+│   │   ├── LoginScreen.kt           # Pantalla de inicio de sesión
+│   │   ├── RegisterScreen.kt        # Pantalla de registro
+│   │   ├── HomeScreen.kt            # Pantalla principal con catálogo
+│   │   ├── ProductDetailScreen.kt   # Detalles del producto
+│   │   └── CartScreen.kt            # Pantalla del carrito
 │   └── theme/
-│       ├── Color.kt             # Paleta de colores
-│       ├── Theme.kt             # Configuración del tema
-│       └── Type.kt              # Tipografía
+│       ├── Color.kt                 # Paleta de colores
+│       ├── Theme.kt                 # Configuración del tema
+│       └── Type.kt                  # Tipografía
 ├── viewmodel/
-│   └── ProductViewModel.kt      # ViewModel para gestión de estado
-└── MainActivity.kt              # Actividad principal
+│   ├── AuthViewModel.kt             # ViewModel de autenticación
+│   └── ProductViewModel.kt          # ViewModel para gestión de productos
+└── MainActivity.kt                  # Actividad principal con navegación
 ```
 
 ## 🚀 Instalación
@@ -106,6 +114,13 @@ app/
 
 ### Componentes Principales
 
+#### AuthViewModel
+Gestiona la autenticación y sesión del usuario:
+- Estado de autenticación (login/logout)
+- Validaciones de formularios
+- Persistencia de sesión con DataStore
+- Operaciones de login, registro y acceso como invitado
+
 #### ProductViewModel
 Gestiona el estado de la aplicación incluyendo:
 - Lista de productos disponibles
@@ -115,13 +130,17 @@ Gestiona el estado de la aplicación incluyendo:
 
 #### Screens (Pantallas)
 
-1. **HomeScreen**: Muestra el catálogo de productos en una cuadrícula
-2. **ProductDetailScreen**: Presenta información detallada de un producto específico
-3. **CartScreen**: Visualiza los productos agregados al carrito y permite gestionar cantidades
+1. **LoginScreen**: Inicio de sesión con validaciones y opción de invitado
+2. **RegisterScreen**: Registro de nuevos usuarios con validaciones
+3. **HomeScreen**: Muestra el catálogo de productos en una cuadrícula
+4. **ProductDetailScreen**: Presenta información detallada de un producto específico
+5. **CartScreen**: Visualiza los productos agregados al carrito y permite gestionar cantidades
 
 #### Navigation
 Sistema de navegación basado en rutas:
-- `/home` - Pantalla principal
+- `/login` - Pantalla de inicio de sesión
+- `/register` - Pantalla de registro
+- `/home` - Pantalla principal (requiere autenticación)
 - `/detail/{productId}` - Detalles del producto
 - `/cart` - Carrito de compras
 
@@ -131,9 +150,21 @@ _Las capturas de pantalla se agregarán próximamente_
 
 ## 💻 Uso
 
+### Autenticación
+
+1. **Iniciar Sesión**: Ingresa tu correo y contraseña
+   - Validación de formato de email
+   - Contraseña mínima de 6 caracteres
+2. **Registrarse**: Crea una cuenta nueva
+   - Nombre completo (mínimo 2 caracteres)
+   - Email válido
+   - Contraseña y confirmación (deben coincidir)
+3. **Continuar como Invitado**: Accede sin crear cuenta
+4. **Cerrar Sesión**: Desde el drawer lateral
+
 ### Navegación Básica
 
-1. **Ver Productos**: Al abrir la app, verás el catálogo de zapatillas
+1. **Ver Productos**: Al abrir la app (después de autenticarte), verás el catálogo de zapatillas
 2. **Ver Detalles**: Toca cualquier producto para ver sus detalles
 3. **Agregar al Carrito**: En la vista de detalles, presiona "Agregar al carrito"
 4. **Acceder al Carrito**: Toca el ícono del carrito en la barra superior
@@ -142,9 +173,10 @@ _Las capturas de pantalla se agregarán próximamente_
 
 ### Características del Drawer
 
+- Información del usuario actual
 - Navegación rápida entre secciones
-- Acceso directo a categorías (próximamente)
-- Configuración de perfil (próximamente)
+- Acceso directo a categorías
+- Cerrar sesión
 
 ## 🔧 Configuración
 
@@ -185,8 +217,9 @@ Las contribuciones son bienvenidas. Por favor:
 
 ## 📋 Roadmap
 
+- [x] Sistema de autenticación de usuarios
+- [x] Persistencia de sesión con DataStore
 - [ ] Integración con API REST real
-- [ ] Sistema de autenticación de usuarios
 - [ ] Persistencia de datos con Room
 - [ ] Sistema de favoritos
 - [ ] Filtros y búsqueda avanzada
