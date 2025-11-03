@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.appsneakerstore.ui.screens.CartScreen
 import com.example.appsneakerstore.ui.screens.HomeScreen
 import com.example.appsneakerstore.ui.screens.ProductDetailScreen
 import com.example.appsneakerstore.viewmodel.ProductViewModel
@@ -42,9 +43,16 @@ fun NavGraph() {
             product?.let {
                 ProductDetailScreen(
                     product = it,
+                    viewModel = viewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
+        }
+        composable("cart") {
+            CartScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
