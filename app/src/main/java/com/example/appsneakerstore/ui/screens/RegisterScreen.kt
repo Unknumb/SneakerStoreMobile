@@ -206,9 +206,9 @@ fun RegisterScreen(
                 )
 
                 // Error Message
-                if (uiState.errorMessage != null) {
+                uiState.errorMessage?.let { errorMessage ->
                     Text(
-                        text = uiState.errorMessage!!,
+                        text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(bottom = 16.dp)

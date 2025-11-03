@@ -47,13 +47,6 @@ fun LoginScreen(
         }
     }
 
-    // Show error message
-    LaunchedEffect(uiState.errorMessage) {
-        if (uiState.errorMessage != null) {
-            // Error will be shown in the UI
-        }
-    }
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -143,9 +136,9 @@ fun LoginScreen(
             )
 
             // Error Message
-            if (uiState.errorMessage != null) {
+            uiState.errorMessage?.let { errorMessage ->
                 Text(
-                    text = uiState.errorMessage!!,
+                    text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 16.dp)
