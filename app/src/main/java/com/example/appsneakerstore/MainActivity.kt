@@ -3,6 +3,7 @@ package com.example.appsneakerstore
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -109,12 +110,14 @@ class MainActivity : ComponentActivity() {
                                     },
                                     modifier = Modifier.fillMaxSize()
                                 ) { paddingValues ->
-                                    HomeScreen(
-                                        viewModel = productViewModel,
-                                        onProductClick = { productId ->
-                                            navController.navigate("detail/$productId")
-                                        }
-                                    )
+                                    Box(modifier = Modifier.padding(paddingValues)) {
+                                        HomeScreen(
+                                            viewModel = productViewModel,
+                                            onProductClick = { productId ->
+                                                navController.navigate("detail/$productId")
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -155,14 +158,16 @@ class MainActivity : ComponentActivity() {
                                     },
                                     modifier = Modifier.fillMaxSize()
                                 ) { paddingValues ->
-                                    if (product != null) {
-                                        ProductDetailScreen(
-                                            product = product,
-                                            viewModel = productViewModel,
-                                            onBack = { navController.popBackStack() }
-                                        )
-                                    } else {
-                                        navController.popBackStack()
+                                    Box(modifier = Modifier.padding(paddingValues)) {
+                                        if (product != null) {
+                                            ProductDetailScreen(
+                                                product = product,
+                                                viewModel = productViewModel,
+                                                onBack = { navController.popBackStack() }
+                                            )
+                                        } else {
+                                            navController.popBackStack()
+                                        }
                                     }
                                 }
                             }
@@ -197,10 +202,12 @@ class MainActivity : ComponentActivity() {
                                     },
                                     modifier = Modifier.fillMaxSize()
                                 ) { paddingValues ->
-                                    CartScreen(
-                                        viewModel = productViewModel,
-                                        onBack = { navController.popBackStack() }
-                                    )
+                                    Box(modifier = Modifier.padding(paddingValues)) {
+                                        CartScreen(
+                                            viewModel = productViewModel,
+                                            onBack = { navController.popBackStack() }
+                                        )
+                                    }
                                 }
                             }
                         }

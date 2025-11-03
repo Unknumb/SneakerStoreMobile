@@ -33,31 +33,25 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun checkExistingSession() {
         viewModelScope.launch {
-            preferencesRepository.isLoggedInFlow.collect { isLoggedIn ->
-                if (isLoggedIn) {
-                    val userId = preferencesRepository.userIdFlow
-                    val email = preferencesRepository.userEmailFlow
-                    val name = preferencesRepository.userNameFlow
-                    val isGuest = preferencesRepository.isGuestFlow
-
-                    // Collect values and create user
-                    var userIdVal: String? = null
-                    var emailVal: String? = null
-                    var nameVal: String? = null
-                    var isGuestVal = false
-
-                    userId.collect { userIdVal = it }
-                    email.collect { emailVal = it }
-                    name.collect { nameVal = it }
-                    isGuest.collect { isGuestVal = it }
-
-                    if (userIdVal != null && emailVal != null && nameVal != null) {
-                        _uiState.value = _uiState.value.copy(
-                            currentUser = User(userIdVal!!, emailVal!!, nameVal!!, isGuestVal),
-                            isLoggedIn = true
-                        )
-                    }
+            kotlinx.coroutines.flow.combine(
+                preferencesRepository.isLoggedInFlow,
+                preferencesRepository.userIdFlow,
+                preferencesRepository.userEmailFlow,
+                preferencesRepository.userNameFlow,
+                preferencesRepository.isGuestFlow
+            ) { isLoggedIn, userId, email, name, isGuest ->
+                if (isLoggedIn && userId != null && email != null && name != null) {
+                    AuthUiState(
+                        isLoading = false,
+                        currentUser = User(userId, email, name, isGuest),
+                        isLoggedIn = true,
+                        errorMessage = null
+                    )
+                } else {
+                    AuthUiState()
                 }
+            }.collect { state ->
+                _uiState.value = state
             }
         }
     }
