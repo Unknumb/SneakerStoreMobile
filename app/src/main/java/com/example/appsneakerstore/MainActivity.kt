@@ -19,7 +19,10 @@ import com.example.appsneakerstore.ui.components.AppWithSideDrawer
 import com.example.appsneakerstore.ui.components.AppSneakerTopBar
 import com.example.appsneakerstore.ui.screens.CartScreen
 import com.example.appsneakerstore.ui.screens.HomeScreen
+import com.example.appsneakerstore.ui.screens.LoginScreen
 import com.example.appsneakerstore.ui.screens.ProductDetailScreen
+import com.example.appsneakerstore.ui.screens.RegisterScreen
+import com.example.appsneakerstore.viewmodel.AuthViewModel
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.ui.theme.AppSneakerStoreTheme
 import kotlinx.coroutines.launch
@@ -37,34 +40,75 @@ class MainActivity : ComponentActivity() {
                     val scope = rememberCoroutineScope()
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val productViewModel: ProductViewModel = viewModel()
+                    val authViewModel: AuthViewModel = viewModel()
+                    val authState = authViewModel.uiState.collectAsState()
 
-                    AppWithSideDrawer(
+                    // Determine start destination based on auth state
+                    val startDestination = if (authState.value.isLoggedIn) "home" else "login"
+
+                    NavHost(
                         navController = navController,
-                        drawerState = drawerState
+                        startDestination = startDestination
                     ) {
-                        Scaffold(
-                            topBar = {
-                                AppSneakerTopBar(
-                                    openDrawer = {
-                                        scope.launch {
-                                            drawerState.open()
-                                        }
-                                    },
-                                    onSearchClick = { /* Acción buscar */ },
-                                    onCartClick = {
-                                        navController.navigate("cart")
-                                    },
-                                    onProfileClick = { /* Acción perfil */ }
-                                )
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        ) { paddingValues ->
-                            NavHost(
+                        // Authentication screens
+                        composable("login") {
+                            LoginScreen(
+                                viewModel = authViewModel,
+                                onLoginSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToRegister = {
+                                    navController.navigate("register")
+                                }
+                            )
+                        }
+
+                        composable("register") {
+                            RegisterScreen(
+                                viewModel = authViewModel,
+                                onRegisterSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        // Main app screens (requires auth)
+                        composable("home") {
+                            AppWithSideDrawer(
                                 navController = navController,
-                                startDestination = "home",
-                                modifier = Modifier.padding(paddingValues)
+                                drawerState = drawerState,
+                                authViewModel = authViewModel,
+                                onLogout = {
+                                    authViewModel.logout()
+                                    navController.navigate("login") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
                             ) {
-                                composable("home") {
+                                Scaffold(
+                                    topBar = {
+                                        AppSneakerTopBar(
+                                            openDrawer = {
+                                                scope.launch {
+                                                    drawerState.open()
+                                                }
+                                            },
+                                            onSearchClick = { /* Acción buscar */ },
+                                            onCartClick = {
+                                                navController.navigate("cart")
+                                            },
+                                            onProfileClick = { /* Acción perfil */ }
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                ) { paddingValues ->
                                     HomeScreen(
                                         viewModel = productViewModel,
                                         onProductClick = { productId ->
@@ -72,13 +116,45 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                 }
-                                composable(
-                                    route = "detail/{productId}",
-                                    arguments = listOf(navArgument("productId") { type = NavType.IntType })
-                                ) { backStackEntry ->
-                                    val productId = backStackEntry.arguments?.getInt("productId") ?: 0
-                                    val product =
-                                        productViewModel.products.collectAsState().value.find { it.id == productId }
+                            }
+                        }
+
+                        composable(
+                            route = "detail/{productId}",
+                            arguments = listOf(navArgument("productId") { type = NavType.IntType })
+                        ) { backStackEntry ->
+                            val productId = backStackEntry.arguments?.getInt("productId") ?: 0
+                            val product =
+                                productViewModel.products.collectAsState().value.find { it.id == productId }
+                            
+                            AppWithSideDrawer(
+                                navController = navController,
+                                drawerState = drawerState,
+                                authViewModel = authViewModel,
+                                onLogout = {
+                                    authViewModel.logout()
+                                    navController.navigate("login") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            ) {
+                                Scaffold(
+                                    topBar = {
+                                        AppSneakerTopBar(
+                                            openDrawer = {
+                                                scope.launch {
+                                                    drawerState.open()
+                                                }
+                                            },
+                                            onSearchClick = { /* Acción buscar */ },
+                                            onCartClick = {
+                                                navController.navigate("cart")
+                                            },
+                                            onProfileClick = { /* Acción perfil */ }
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                ) { paddingValues ->
                                     if (product != null) {
                                         ProductDetailScreen(
                                             product = product,
@@ -89,7 +165,38 @@ class MainActivity : ComponentActivity() {
                                         navController.popBackStack()
                                     }
                                 }
-                                composable("cart") {
+                            }
+                        }
+
+                        composable("cart") {
+                            AppWithSideDrawer(
+                                navController = navController,
+                                drawerState = drawerState,
+                                authViewModel = authViewModel,
+                                onLogout = {
+                                    authViewModel.logout()
+                                    navController.navigate("login") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            ) {
+                                Scaffold(
+                                    topBar = {
+                                        AppSneakerTopBar(
+                                            openDrawer = {
+                                                scope.launch {
+                                                    drawerState.open()
+                                                }
+                                            },
+                                            onSearchClick = { /* Acción buscar */ },
+                                            onCartClick = {
+                                                navController.navigate("cart")
+                                            },
+                                            onProfileClick = { /* Acción perfil */ }
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                ) { paddingValues ->
                                     CartScreen(
                                         viewModel = productViewModel,
                                         onBack = { navController.popBackStack() }
