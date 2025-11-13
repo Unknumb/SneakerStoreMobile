@@ -7,7 +7,10 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appsneakerstore.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,8 +18,12 @@ fun AppSneakerTopBar(
     openDrawer: () -> Unit,
     onSearchClick: () -> Unit,
     onCartClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onLogout: () -> Unit,
+    userViewModel: UserViewModel = viewModel()
 ) {
+    val username = userViewModel.username.collectAsState().value
+
     TopAppBar(
         navigationIcon = {
             IconButton(onClick = openDrawer) {
@@ -38,8 +45,15 @@ fun AppSneakerTopBar(
             IconButton(onClick = onCartClick) {
                 Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito")
             }
-            IconButton(onClick = onProfileClick) {
-                Icon(Icons.Filled.Person, contentDescription = "Perfil")
+            if (username != null) {
+                Text(text = username)
+                IconButton(onClick = onLogout) {
+                    Icon(Icons.Filled.Person, contentDescription = "Logout")
+                }
+            } else {
+                IconButton(onClick = onProfileClick) {
+                    Icon(Icons.Filled.Person, contentDescription = "Perfil")
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

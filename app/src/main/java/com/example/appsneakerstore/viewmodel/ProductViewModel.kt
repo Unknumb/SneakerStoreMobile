@@ -39,11 +39,15 @@ class ProductViewModel : ViewModel() {
     fun removeFromCart(product: Product) {
         val currentMap = _cartItems.value.toMutableMap()
         val currentCount = currentMap[product] ?: 0
-        if (currentCount <= 1) {
-            currentMap.remove(product)
-        } else {
+        if (currentCount > 1) {
             currentMap[product] = currentCount - 1
         }
+        _cartItems.value = currentMap
+    }
+
+    fun removeItemFromCart(product: Product) {
+        val currentMap = _cartItems.value.toMutableMap()
+        currentMap.remove(product)
         _cartItems.value = currentMap
     }
 

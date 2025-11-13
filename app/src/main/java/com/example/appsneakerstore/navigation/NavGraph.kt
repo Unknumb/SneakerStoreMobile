@@ -7,30 +7,45 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.appsneakerstore.ui.screens.CartScreen
-import com.example.appsneakerstore.ui.screens.HomeScreen
-import com.example.appsneakerstore.ui.screens.ProductDetailScreen
+import com.example.appsneakerstore.ui.screens.*
 import com.example.appsneakerstore.viewmodel.ProductViewModel
+import com.example.appsneakerstore.viewmodel.UserViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
     val viewModel: ProductViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
 
-    // Observa los productos como estado Compose
     val productListState = viewModel.products.collectAsState()
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "login"
     ) {
+        composable("login") {
+            LoginScreen(
+                onLogin = {
+                    userViewModel.login("Test User")
+                    navController.navigate("home")
+                },
+                onGuestLogin = { navController.navigate("home") },
+                onRegisterClick = { navController.navigate("register") }
+            )
+        }
+        composable("register") {
+            RegisterScreen(onRegister = { navController.navigate("home") })
+        }
         composable("home") {
             HomeScreen(
                 viewModel = viewModel,
+                userViewModel = userViewModel,
                 onProductClick = { productId ->
                     navController.navigate("detail/$productId")
-                }
+                },
+                onCartClick = { navController.navigate("cart") },
+                onProfileClick = { navController.navigate("login") }
             )
         }
         composable(
