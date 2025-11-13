@@ -16,9 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
@@ -73,6 +75,14 @@ fun CartScreen(
                         ListItem(
                             headlineContent = { Text(product.name, fontWeight = FontWeight.Bold) },
                             supportingContent = { Text("${clpFormat.format(product.price)} x $quantity") },
+                            leadingContent = {
+                                AsyncImage(
+                                    model = product.imageUrl,
+                                    contentDescription = product.name,
+                                    modifier = Modifier.size(64.dp),
+                                    contentScale = ContentScale.Crop
+                                )
+                            },
                             trailingContent = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { viewModel.removeFromCart(product) }) {
