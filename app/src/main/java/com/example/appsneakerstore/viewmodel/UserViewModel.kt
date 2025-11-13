@@ -21,6 +21,9 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _purchases = MutableStateFlow<List<Product>>(emptyList())
     val purchases: StateFlow<List<Product>> = _purchases.asStateFlow()
 
+    private val _favorites = MutableStateFlow<Set<Int>>(emptySet())
+    val favorites: StateFlow<Set<Int>> = _favorites.asStateFlow()
+
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError.asStateFlow()
 
@@ -47,6 +50,16 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun toggleFavorite(productId: Int) {
+        val currentFavorites = _favorites.value.toMutableSet()
+        if (currentFavorites.contains(productId)) {
+            currentFavorites.remove(productId)
+        } else {
+            currentFavorites.add(productId)
+        }
+        _favorites.value = currentFavorites
+    }
+
     fun addPurchase(product: Product) {
         val currentPurchases = _purchases.value.toMutableList()
         currentPurchases.add(product)
@@ -56,6 +69,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         _username.value = null
         _purchases.value = emptyList()
+        _favorites.value = emptySet()
     }
 
     fun clearRegistrationSuccess() {

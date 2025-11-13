@@ -5,11 +5,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,6 +22,7 @@ import coil.compose.AsyncImage
 import com.example.appsneakerstore.ui.components.AppSneakerTopBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
 
@@ -27,62 +33,82 @@ fun HomeScreen(
     userViewModel: UserViewModel = viewModel(),
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
     val productList by viewModel.filteredProducts.collectAsState()
-    val clpFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
+    val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val favorites by userViewModel.favorites.collectAsState()
 
-    Scaffold(
-        topBar = {
-            AppSneakerTopBar(
-                openDrawer = {},
-                onCartClick = onCartClick,
-                onProfileClick = onProfileClick,
-                onLogout = { userViewModel.logout() },
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ProfileScreen(
                 userViewModel = userViewModel,
-                productViewModel = viewModel
+                onLoginRedirect = onProfileClick,
+                onBack = { scope.launch { drawerState.close() } }
             )
         }
-    ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(productList) { product ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(280.dp)
-                        .clickable {
-                            viewModel.selectProduct(product.id)
-                            onProductClick(product.id)
-                        },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(
+    ) {
+        Scaffold(
+            topBar = {
+                AppSneakerTopBar(
+                    openDrawer = { scope.launch { drawerState.open() } },
+                    onCartClick = onCartClick,
+                    onFavoritesClick = onFavoritesClick,
+                    userViewModel = userViewModel,
+                    productViewModel = viewModel
+                )
+            }
+        ) { paddingValues ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(productList) { product ->
+                    Card(
                         modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.SpaceBetween
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.selectProduct(product.id)
+                                onProductClick(product.id)
+                            },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
-                        AsyncImage(
-                            model = product.imageUrl,
-                            contentDescription = product.name,
-                            modifier = Modifier
-                                .height(120.dp)
-                                .fillMaxWidth(),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = product.name, style = MaterialTheme.typography.titleMedium)
-                        Text(text = clpFormat.format(product.price), style = MaterialTheme.typography.bodyLarge)
+                        Box {
+                            Column {
+                                AsyncImage(
+                                    model = product.imageUrl,
+                                    contentDescription = product.name,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f),
+                                    contentScale = ContentScale.Fit
+                                )
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(text = product.name, style = MaterialTheme.typography.titleMedium)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(text = clpFormat.format(product.price), style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                            if (favorites.contains(product.id)) {
+                                Icon(
+                                    imageVector = Icons.Default.Favorite,
+                                    contentDescription = "Favorite",
+                                    tint = Color.Red,
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }

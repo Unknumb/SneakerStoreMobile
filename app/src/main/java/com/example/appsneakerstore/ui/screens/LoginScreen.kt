@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     userViewModel: UserViewModel = viewModel(),
@@ -34,47 +35,59 @@ fun LoginScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Sneaker Store") })
+        }
     ) {
-        Text("Sneaker Store", style = MaterialTheme.typography.headlineLarge)
-        Spacer(modifier = Modifier.height(32.dp))
-        OutlinedTextField(
-            value = username.value,
-            onValueChange = { username.value = it },
-            label = { Text("Usuario") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = password.value,
-            onValueChange = { password.value = it },
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            isError = errorState != null
-        )
-        errorState?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { userViewModel.login(username.value, password.value) },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Iniciar sesión")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        TextButton(onClick = onRegisterClick) {
-            Text("Registrarse")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        TextButton(onClick = onGuestLogin) {
-            Text("Continuar como invitado")
+            Text("BIENVENIDO", style = MaterialTheme.typography.headlineLarge)
+            Spacer(modifier = Modifier.height(32.dp))
+            OutlinedTextField(
+                value = username.value,
+                onValueChange = { username.value = it },
+                label = { Text("Usuario") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = password.value,
+                onValueChange = { password.value = it },
+                label = { Text("Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
+                isError = errorState != null,
+                shape = MaterialTheme.shapes.medium
+            )
+            errorState?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = { userViewModel.login(username.value, password.value) },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("INICIAR SESIÓN", style = MaterialTheme.typography.labelLarge)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row {
+                TextButton(onClick = onRegisterClick) {
+                    Text("CREAR CUENTA")
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onGuestLogin) {
+                    Text("ENTRAR COMO INVITADO")
+                }
+            }
         }
     }
 }

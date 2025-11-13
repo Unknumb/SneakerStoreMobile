@@ -33,7 +33,8 @@ fun NavGraph() {
         composable("register") {
             RegisterScreen(
                 userViewModel = userViewModel,
-                onRegister = { navController.navigate("login") }
+                onRegister = { navController.navigate("login") },
+                onBack = { navController.popBackStack() }
             )
         }
         composable("home") {
@@ -44,11 +45,26 @@ fun NavGraph() {
                     navController.navigate("detail/$productId")
                 },
                 onCartClick = { navController.navigate("cart") },
+                onFavoritesClick = { navController.navigate("favorites") },
                 onProfileClick = { navController.navigate("profile") }
             )
         }
+        composable("favorites") {
+            FavoritesScreen(
+                userViewModel = userViewModel,
+                productViewModel = productViewModel,
+                onBack = { navController.popBackStack() },
+                onProductClick = { productId ->
+                    navController.navigate("detail/$productId")
+                }
+            )
+        }
         composable("profile") {
-            ProfileScreen(userViewModel = userViewModel, onLoginRedirect = { navController.navigate("login") })
+            ProfileScreen(
+                userViewModel = userViewModel,
+                onLoginRedirect = { navController.navigate("login") },
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(
             route = "detail/{productId}",
@@ -61,6 +77,7 @@ fun NavGraph() {
                 ProductDetailScreen(
                     product = it,
                     viewModel = productViewModel,
+                    userViewModel = userViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

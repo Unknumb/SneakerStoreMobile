@@ -1,17 +1,18 @@
 package com.example.appsneakerstore.ui.components
 
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsneakerstore.viewmodel.ProductViewModel
@@ -22,14 +23,13 @@ import com.example.appsneakerstore.viewmodel.UserViewModel
 fun AppSneakerTopBar(
     openDrawer: () -> Unit,
     onCartClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    onLogout: () -> Unit,
+    onFavoritesClick: () -> Unit,
     userViewModel: UserViewModel = viewModel(),
     productViewModel: ProductViewModel = viewModel()
 ) {
     var isSearchVisible by remember { mutableStateOf(false) }
-    val username by userViewModel.username.collectAsState()
     val searchQuery by productViewModel.searchQuery.collectAsState()
+    val username by userViewModel.username.collectAsState()
 
     TopAppBar(
         navigationIcon = {
@@ -44,8 +44,8 @@ fun AppSneakerTopBar(
                     onValueChange = { productViewModel.onSearchQueryChange(it) },
                     placeholder = { Text("Buscar...") },
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.primary,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.primary
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
                     )
                 )
             } else {
@@ -65,17 +65,16 @@ fun AppSneakerTopBar(
                 Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito")
             }
             if (username != null) {
-                IconButton(onClick = onProfileClick) {
-                    Icon(Icons.Filled.Person, contentDescription = "Perfil")
-                }
-            } else {
-                IconButton(onClick = onProfileClick) {
-                    Icon(Icons.Filled.Person, contentDescription = "Perfil")
+                IconButton(onClick = onFavoritesClick) {
+                    Icon(Icons.Filled.Favorite, contentDescription = "Favoritos")
                 }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = Color.White,
+            titleContentColor = Color.Black,
+            actionIconContentColor = Color.Black,
+            navigationIconContentColor = Color.Black
         )
     )
 }

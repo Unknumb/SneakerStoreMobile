@@ -1,6 +1,6 @@
 package com.example.appsneakerstore.viewmodel
 
-import MockData
+import com.example.appsneakerstore.data.local.MockData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appsneakerstore.model.Product

@@ -16,8 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
@@ -32,30 +32,22 @@ fun CartScreen(
     userViewModel: UserViewModel = viewModel(),
     onBack: () -> Unit
 ) {
-    val cartMap = viewModel.cartItems.collectAsState().value
+    val cartMap by viewModel.cartItems.collectAsState()
     val totalAmount = cartMap.entries.sumOf { it.key.price * it.value }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val clpFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
+    val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
     val username by userViewModel.username.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Carrito de compras") },
+                title = { Text("CARRITO") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.clearCart() }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Vaciar carrito")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                }
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -67,7 +59,7 @@ fun CartScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No hay productos en el carrito.")
+                Text("Tu carrito está vacío.", style = MaterialTheme.typography.titleLarge)
             }
         } else {
             Column(
@@ -76,22 +68,17 @@ fun CartScreen(
                     .padding(paddingValues)
                     .padding(16.dp)
             ) {
-                Text(
-                    text = "Total: ${clpFormat.format(totalAmount)}",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(cartMap.entries.toList()) { (product, quantity) ->
                         ListItem(
-                            headlineContent = { Text(product.name) },
+                            headlineContent = { Text(product.name, fontWeight = FontWeight.Bold) },
                             supportingContent = { Text("${clpFormat.format(product.price)} x $quantity") },
                             trailingContent = {
-                                Row {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { viewModel.removeFromCart(product) }) {
-                                        Icon(Icons.Filled.Remove, contentDescription = "Restar uno")
+                                        Icon(Icons.Default.Remove, contentDescription = "Restar uno")
                                     }
+                                    Text(quantity.toString())
                                     IconButton(onClick = { viewModel.addToCart(product) }) {
                                         Icon(Icons.Default.Add, contentDescription = "Sumar uno")
                                     }
@@ -105,6 +92,11 @@ fun CartScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Total:", style = MaterialTheme.typography.headlineSmall)
+                    Text(clpFormat.format(totalAmount), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
                         if (username != null) {
@@ -116,12 +108,10 @@ fun CartScreen(
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Comprar (${cartMap.values.sum()})")
+                    Text("COMPRAR", style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
