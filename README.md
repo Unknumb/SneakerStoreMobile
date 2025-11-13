@@ -8,12 +8,16 @@ SneakerStoreMobile es una tienda de zapatillas deportivas diseñada para ofrecer
 
 ## ✨ Características
 
-- **Catálogo de Productos**: Visualización en cuadrícula de zapatillas con imágenes, nombres y precios
-- **Detalles del Producto**: Vista detallada con descripción completa y opciones de compra
-- **Carrito de Compras**: Gestión de productos seleccionados con contador de cantidades
+- **Autenticación de Usuarios**: Sistema completo de login y registro con persistencia en base de datos local
+- **Gestión de Perfiles**: Los usuarios pueden crear cuentas, iniciar sesión o entrar como invitados
+- **Catálogo de Productos**: Visualización en cuadrícula de zapatillas con imágenes, nombres y precios en CLP
+- **Detalles del Producto**: Vista detallada con descripción completa, imágenes y opciones de compra
+- **Sistema de Favoritos**: Marca y guarda tus productos favoritos para acceso rápido
+- **Carrito de Compras**: Gestión de productos seleccionados con imágenes, contador de cantidades y total en pesos chilenos
+- **Historial de Compras**: Registro de todas las compras realizadas por el usuario
 - **Navegación Intuitiva**: Sistema de navegación con drawer lateral y barra superior
 - **Diseño Responsivo**: Interfaz moderna y adaptable con Material Design 3
-- **Carga de Imágenes**: Visualización eficiente de imágenes desde URLs remotas
+- **Carga de Imágenes**: Visualización eficiente de imágenes desde URLs remotas con Coil
 
 ## 🛠️ Tecnologías y Arquitectura
 
@@ -43,10 +47,15 @@ SneakerStoreMobile es una tienda de zapatillas deportivas diseñada para ofrecer
 ```
 app/
 ├── data/
-│   └── local/
-│       └── MockData.kt          # Datos simulados de productos
+│   ├── local/
+│   │   ├── AppDatabase.kt       # Base de datos Room
+│   │   ├── UserDao.kt           # DAO para operaciones de usuarios
+│   │   └── MockData.kt          # Datos simulados de productos
+│   └── repository/
+│       └── UserRepository.kt    # Repositorio para gestión de usuarios
 ├── model/
-│   └── Product.kt               # Modelo de datos de producto
+│   ├── Product.kt               # Modelo de datos de producto
+│   └── User.kt                  # Modelo de datos de usuario
 ├── navigation/
 │   └── NavGraph.kt              # Configuración de navegación
 ├── ui/
@@ -54,15 +63,20 @@ app/
 │   │   ├── AppSneakerTopBar.kt  # Barra superior personalizada
 │   │   └── AppWithSideDrawer.kt # Drawer lateral de navegación
 │   ├── screens/
+│   │   ├── LoginScreen.kt       # Pantalla de inicio de sesión
+│   │   ├── RegisterScreen.kt    # Pantalla de registro de usuarios
 │   │   ├── HomeScreen.kt        # Pantalla principal con catálogo
 │   │   ├── ProductDetailScreen.kt # Detalles del producto
-│   │   └── CartScreen.kt        # Pantalla del carrito
+│   │   ├── CartScreen.kt        # Pantalla del carrito
+│   │   ├── FavoritesScreen.kt   # Pantalla de productos favoritos
+│   │   └── ProfileScreen.kt     # Pantalla de perfil de usuario
 │   └── theme/
 │       ├── Color.kt             # Paleta de colores
 │       ├── Theme.kt             # Configuración del tema
 │       └── Type.kt              # Tipografía
 ├── viewmodel/
-│   └── ProductViewModel.kt      # ViewModel para gestión de estado
+│   ├── ProductViewModel.kt      # ViewModel para gestión de productos
+│   └── UserViewModel.kt         # ViewModel para gestión de usuarios
 └── MainActivity.kt              # Actividad principal
 ```
 
@@ -106,24 +120,41 @@ app/
 
 ### Componentes Principales
 
-#### ProductViewModel
-Gestiona el estado de la aplicación incluyendo:
+#### ViewModels
+
+**ProductViewModel**: Gestiona el estado de los productos incluyendo:
 - Lista de productos disponibles
 - Producto seleccionado actualmente
-- Items en el carrito de compras
+- Items en el carrito de compras con cantidades
 - Operaciones de agregar/eliminar del carrito
+- Cálculo del total de compra
+
+**UserViewModel**: Gestiona el estado del usuario incluyendo:
+- Autenticación (login/registro)
+- Información del usuario actual
+- Lista de favoritos
+- Historial de compras
+- Operaciones de logout
 
 #### Screens (Pantallas)
 
-1. **HomeScreen**: Muestra el catálogo de productos en una cuadrícula
-2. **ProductDetailScreen**: Presenta información detallada de un producto específico
-3. **CartScreen**: Visualiza los productos agregados al carrito y permite gestionar cantidades
+1. **LoginScreen**: Pantalla de inicio de sesión con opción de entrar como invitado
+2. **RegisterScreen**: Formulario de registro de nuevos usuarios
+3. **HomeScreen**: Pantalla principal con catálogo de productos en cuadrícula
+4. **ProductDetailScreen**: Vista detallada de un producto con opción de agregar a favoritos y carrito
+5. **CartScreen**: Visualiza los productos con imágenes, permite gestionar cantidades y finalizar compra
+6. **FavoritesScreen**: Muestra los productos marcados como favoritos
+7. **ProfileScreen**: Información del perfil del usuario y configuración
 
 #### Navigation
 Sistema de navegación basado en rutas:
-- `/home` - Pantalla principal
+- `/login` - Pantalla de inicio de sesión (pantalla inicial)
+- `/register` - Registro de nuevos usuarios
+- `/home` - Pantalla principal del catálogo
 - `/detail/{productId}` - Detalles del producto
 - `/cart` - Carrito de compras
+- `/favorites` - Productos favoritos
+- `/profile` - Perfil del usuario
 
 ## 📸 Capturas de Pantalla
 
@@ -131,20 +162,33 @@ _Las capturas de pantalla se agregarán próximamente_
 
 ## 💻 Uso
 
-### Navegación Básica
+### Flujo de Usuario
 
-1. **Ver Productos**: Al abrir la app, verás el catálogo de zapatillas
-2. **Ver Detalles**: Toca cualquier producto para ver sus detalles
-3. **Agregar al Carrito**: En la vista de detalles, presiona "Agregar al carrito"
-4. **Acceder al Carrito**: Toca el ícono del carrito en la barra superior
-5. **Gestionar Carrito**: Elimina productos con el ícono de papelera
-6. **Finalizar Compra**: Presiona el botón "Comprar" para simular la compra
+#### Primer Uso
+1. **Iniciar la App**: Al abrir la aplicación por primera vez, verás la pantalla de login
+2. **Crear Cuenta**: Presiona "CREAR CUENTA" para registrar un nuevo usuario
+3. **Registro**: Completa el formulario con usuario y contraseña
+4. **Iniciar Sesión**: Ingresa con tus credenciales o usa la opción "ENTRAR COMO INVITADO"
 
-### Características del Drawer
+#### Navegación Principal
 
-- Navegación rápida entre secciones
-- Acceso directo a categorías (próximamente)
-- Configuración de perfil (próximamente)
+1. **Ver Catálogo**: Una vez en la app, verás el catálogo de zapatillas en la pantalla principal
+2. **Ver Detalles**: Toca cualquier producto para ver información detallada, descripción y precio en CLP
+3. **Agregar a Favoritos**: En la vista de detalles, presiona el ícono de corazón para marcar como favorito
+4. **Agregar al Carrito**: Presiona "Agregar al carrito" en la vista de detalles
+5. **Ver Carrito**: Toca el ícono del carrito en la barra superior para ver tus productos
+6. **Gestionar Carrito**: 
+   - Visualiza imágenes y detalles de cada producto
+   - Ajusta cantidades con los botones + y -
+   - Elimina productos con el ícono de papelera
+   - Ve el total calculado en pesos chilenos
+7. **Finalizar Compra**: Presiona el botón "Comprar" para completar la compra
+
+#### Otras Funcionalidades
+
+- **Favoritos**: Accede al menú lateral para ver todos tus productos favoritos
+- **Perfil**: Visualiza tu información de usuario y el historial de compras
+- **Cerrar Sesión**: Desde el perfil puedes cerrar sesión y regresar al login
 
 ## 🔧 Configuración
 
@@ -185,15 +229,23 @@ Las contribuciones son bienvenidas. Por favor:
 
 ## 📋 Roadmap
 
+### Implementado ✅
+- [x] Sistema de autenticación de usuarios (Login/Register)
+- [x] Persistencia de datos con Room Database
+- [x] Sistema de favoritos
+- [x] Historial de compras
+- [x] Carrito con imágenes y gestión de cantidades
+- [x] Formato de moneda en pesos chilenos (CLP)
+
+### Por Implementar
 - [ ] Integración con API REST real
-- [ ] Sistema de autenticación de usuarios
-- [ ] Persistencia de datos con Room
-- [ ] Sistema de favoritos
 - [ ] Filtros y búsqueda avanzada
-- [ ] Historial de compras
+- [ ] Categorías de productos
 - [ ] Integración con pasarelas de pago
 - [ ] Notificaciones push
 - [ ] Modo oscuro/claro
+- [ ] Sincronización de favoritos y compras con backend
+- [ ] Recuperación de contraseña
 
 ## 🐛 Problemas Conocidos
 
@@ -205,7 +257,9 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👥 Autores
 
-- **Unknumb** - [GitHub](https://github.com/Unknumb)
+- **Alvaro Uribe**
+- **Juan Toledo**
+- **Nicolas Hölck**
 
 ## 📞 Contacto
 
