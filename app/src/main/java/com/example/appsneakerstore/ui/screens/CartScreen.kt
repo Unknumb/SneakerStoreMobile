@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +32,7 @@ fun CartScreen(
     val totalAmount = cartMap.entries.sumOf { it.key.price * it.value }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val clpFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
 
     Scaffold(
         topBar = {
@@ -69,7 +72,7 @@ fun CartScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Total: $%.2f".format(totalAmount),
+                    text = "Total: ${clpFormat.format(totalAmount)}",
                     style = MaterialTheme.typography.headlineMedium,
                     fontSize = 20.sp,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -78,7 +81,7 @@ fun CartScreen(
                     items(cartMap.entries.toList()) { (product, quantity) ->
                         ListItem(
                             headlineContent = { Text(product.name) },
-                            supportingContent = { Text("$${product.price} x $quantity") },
+                            supportingContent = { Text("${clpFormat.format(product.price)} x $quantity") },
                             trailingContent = {
                                 Row {
                                     IconButton(onClick = { viewModel.removeFromCart(product) }) {

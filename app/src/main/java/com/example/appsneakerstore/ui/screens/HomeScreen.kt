@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,8 @@ import coil.compose.AsyncImage
 import com.example.appsneakerstore.ui.components.AppSneakerTopBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
+import java.text.NumberFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,17 +29,18 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    val productList = viewModel.products.collectAsState()
+    val productList by viewModel.filteredProducts.collectAsState()
+    val clpFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
 
     Scaffold(
         topBar = {
             AppSneakerTopBar(
                 openDrawer = {},
-                onSearchClick = {},
                 onCartClick = onCartClick,
                 onProfileClick = onProfileClick,
                 onLogout = { userViewModel.logout() },
-                userViewModel = userViewModel
+                userViewModel = userViewModel,
+                productViewModel = viewModel
             )
         }
     ) { paddingValues ->
@@ -50,7 +54,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            items(productList.value) { product ->
+            items(productList) { product ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -78,7 +82,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = product.name, style = MaterialTheme.typography.titleMedium)
-                        Text(text = "$${product.price}", style = MaterialTheme.typography.bodyLarge)
+                        Text(text = clpFormat.format(product.price), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }

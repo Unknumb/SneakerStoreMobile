@@ -27,14 +27,14 @@ fun LoginScreen(onLogin: () -> Unit, onGuestLogin: () -> Unit, onRegisterClick: 
         OutlinedTextField(
             value = username.value,
             onValueChange = { username.value = it },
-            label = { Text("Username") },
+            label = { Text("Usuario") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = password.value,
             onValueChange = { password.value = it },
-            label = { Text("Password") },
+            label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -43,15 +43,15 @@ fun LoginScreen(onLogin: () -> Unit, onGuestLogin: () -> Unit, onRegisterClick: 
             onClick = onLogin,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Login")
+            Text("Iniciar sesión")
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onRegisterClick) {
-            Text("Register")
+            Text("Registrarse")
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onGuestLogin) {
-            Text("Continue as Guest")
+            Text("Continuar como invitado")
         }
     }
 }

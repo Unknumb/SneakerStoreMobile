@@ -18,6 +18,8 @@ import coil.compose.AsyncImage
 import com.example.appsneakerstore.model.Product
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +31,7 @@ fun ProductDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val selectedSize = remember { mutableStateOf<Int?>(null) }
+    val clpFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
 
     Scaffold(
         topBar = {
@@ -72,7 +75,7 @@ fun ProductDetailScreen(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "$${product.price}",
+                text = clpFormat.format(product.price),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.align(Alignment.Start)
@@ -85,7 +88,7 @@ fun ProductDetailScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = "Sizes:",
+                text = "Tallas:",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.align(Alignment.Start)
             )
