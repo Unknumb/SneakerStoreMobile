@@ -3,17 +3,36 @@ package com.example.appsneakerstore.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appsneakerstore.viewmodel.UserViewModel
 
 @Composable
-fun LoginScreen(onLogin: () -> Unit, onGuestLogin: () -> Unit, onRegisterClick: () -> Unit) {
+fun LoginScreen(
+    userViewModel: UserViewModel = viewModel(),
+    onLogin: () -> Unit,
+    onGuestLogin: () -> Unit,
+    onRegisterClick: () -> Unit
+) {
+    val usernameState by userViewModel.username.collectAsState()
+    val errorState by userViewModel.loginError.collectAsState()
+
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+
+    LaunchedEffect(usernameState) {
+        if (usernameState != null) {
+            onLogin()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -36,11 +55,15 @@ fun LoginScreen(onLogin: () -> Unit, onGuestLogin: () -> Unit, onRegisterClick: 
             onValueChange = { password.value = it },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = errorState != null
         )
+        errorState?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = onLogin,
+            onClick = { userViewModel.login(username.value, password.value) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Iniciar sesión")

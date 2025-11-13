@@ -15,10 +15,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
-    val viewModel: ProductViewModel = viewModel()
+    val productViewModel: ProductViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
-
-    val productListState = viewModel.products.collectAsState()
 
     NavHost(
         navController = navController,
@@ -26,46 +24,51 @@ fun NavGraph() {
     ) {
         composable("login") {
             LoginScreen(
-                onLogin = {
-                    userViewModel.login("Test User")
-                    navController.navigate("home")
-                },
+                userViewModel = userViewModel,
+                onLogin = { navController.navigate("home") },
                 onGuestLogin = { navController.navigate("home") },
                 onRegisterClick = { navController.navigate("register") }
             )
         }
         composable("register") {
-            RegisterScreen(onRegister = { navController.navigate("home") })
+            RegisterScreen(
+                userViewModel = userViewModel,
+                onRegister = { navController.navigate("login") }
+            )
         }
         composable("home") {
             HomeScreen(
-                viewModel = viewModel,
+                viewModel = productViewModel,
                 userViewModel = userViewModel,
                 onProductClick = { productId ->
                     navController.navigate("detail/$productId")
                 },
                 onCartClick = { navController.navigate("cart") },
-                onProfileClick = { navController.navigate("login") }
+                onProfileClick = { navController.navigate("profile") }
             )
+        }
+        composable("profile") {
+            ProfileScreen(userViewModel = userViewModel, onLoginRedirect = { navController.navigate("login") })
         }
         composable(
             route = "detail/{productId}",
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getInt("productId") ?: 0
-            val product = productListState.value.find { it.id == productId }
+            val product = productViewModel.products.collectAsState().value.find { it.id == productId }
 
             product?.let {
                 ProductDetailScreen(
                     product = it,
-                    viewModel = viewModel,
+                    viewModel = productViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
         }
         composable("cart") {
             CartScreen(
-                viewModel = viewModel,
+                viewModel = productViewModel,
+                userViewModel = userViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

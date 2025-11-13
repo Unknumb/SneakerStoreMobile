@@ -65,9 +65,8 @@ fun AppSneakerTopBar(
                 Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito")
             }
             if (username != null) {
-                Text(text = username!!)
-                IconButton(onClick = onLogout) {
-                    Icon(Icons.Filled.Person, contentDescription = "Logout")
+                IconButton(onClick = onProfileClick) {
+                    Icon(Icons.Filled.Person, contentDescription = "Perfil")
                 }
             } else {
                 IconButton(onClick = onProfileClick) {
