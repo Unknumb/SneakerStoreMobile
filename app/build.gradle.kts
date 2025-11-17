@@ -75,6 +75,9 @@ dependencies {
     // Coil (carga de imágenes)
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     // Test
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appsneakerstore.model.Order
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import java.text.NumberFormat
 import java.util.*
@@ -26,7 +27,7 @@ fun ProfileScreen(
     onBack: () -> Unit
 ) {
     val username by userViewModel.username.collectAsState()
-    val purchases by userViewModel.purchases.collectAsState()
+    val orders by userViewModel.orders.collectAsState()
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
 
     Scaffold(
@@ -40,11 +41,11 @@ fun ProfileScreen(
                 }
             )
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(paddingValues)
                 .padding(16.dp)
         ) {
             if (username != null) {
@@ -54,12 +55,18 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 Text("MIS COMPRAS", style = MaterialTheme.typography.headlineSmall)
                 LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(purchases) { product ->
-                        ListItem(
-                            headlineContent = { Text(product.name, fontWeight = FontWeight.Bold) },
-                            supportingContent = { Text(clpFormat.format(product.price)) }
-                        )
-                        HorizontalDivider()
+                    items(orders) { order: Order ->
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                            Text("Pedido del ${order.orderDate}", style = MaterialTheme.typography.titleMedium)
+                            order.items.forEach {
+                                ListItem(
+                                    headlineContent = { Text(it.name, fontWeight = FontWeight.Bold) },
+                                    supportingContent = { Text(clpFormat.format(it.price)) }
+                                )
+                            }
+                            Text("Total: ${clpFormat.format(order.total)}", modifier = Modifier.align(Alignment.End))
+                            HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))

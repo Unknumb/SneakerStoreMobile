@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appsneakerstore.data.repository.UserRepository
-import com.example.appsneakerstore.model.Product
+import com.example.appsneakerstore.model.Order
 import com.example.appsneakerstore.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +18,8 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _username = MutableStateFlow<String?>(null)
     val username: StateFlow<String?> = _username.asStateFlow()
 
-    private val _purchases = MutableStateFlow<List<Product>>(emptyList())
-    val purchases: StateFlow<List<Product>> = _purchases.asStateFlow()
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
+    val orders: StateFlow<List<Order>> = _orders.asStateFlow()
 
     private val _favorites = MutableStateFlow<Set<Int>>(emptySet())
     val favorites: StateFlow<Set<Int>> = _favorites.asStateFlow()
@@ -60,15 +60,15 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         _favorites.value = currentFavorites
     }
 
-    fun addPurchase(product: Product) {
-        val currentPurchases = _purchases.value.toMutableList()
-        currentPurchases.add(product)
-        _purchases.value = currentPurchases
+    fun addOrder(order: Order) {
+        val currentOrders = _orders.value.toMutableList()
+        currentOrders.add(order)
+        _orders.value = currentOrders
     }
 
     fun logout() {
         _username.value = null
-        _purchases.value = emptyList()
+        _orders.value = emptyList()
         _favorites.value = emptySet()
     }
 

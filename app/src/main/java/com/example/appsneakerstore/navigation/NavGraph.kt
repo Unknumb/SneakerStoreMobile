@@ -86,8 +86,20 @@ fun NavGraph() {
             CartScreen(
                 viewModel = productViewModel,
                 userViewModel = userViewModel,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onCheckout = { navController.navigate("checkout") }
             )
+        }
+        composable("checkout") {
+            CheckoutScreen(
+                onBack = { navController.popBackStack() },
+                onCheckoutComplete = { navController.navigate("order_success") },
+                productViewModel = productViewModel,
+                userViewModel = userViewModel
+            )
+        }
+        composable("order_success") {
+            OrderSuccessScreen(onBackToHome = { navController.navigate("home") })
         }
     }
 }

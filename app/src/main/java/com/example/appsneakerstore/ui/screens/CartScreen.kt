@@ -12,8 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -23,7 +21,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
-import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
 
@@ -32,14 +29,12 @@ import java.util.*
 fun CartScreen(
     viewModel: ProductViewModel,
     userViewModel: UserViewModel = viewModel(),
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onCheckout: () -> Unit
 ) {
     val cartMap by viewModel.cartItems.collectAsState()
     val totalAmount = cartMap.entries.sumOf { it.key.price * it.value }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
-    val username by userViewModel.username.collectAsState()
 
     Scaffold(
         topBar = {
@@ -51,8 +46,7 @@ fun CartScreen(
                     }
                 }
             )
-        },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        }
     ) { paddingValues ->
         if (cartMap.isEmpty()) {
             Box(
@@ -108,16 +102,7 @@ fun CartScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = {
-                        if (username != null) {
-                            cartMap.keys.forEach { userViewModel.addPurchase(it) }
-                        }
-                        viewModel.simulatePurchase {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Compra realizada con éxito")
-                            }
-                        }
-                    },
+                    onClick = onCheckout,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = MaterialTheme.shapes.medium
                 ) {

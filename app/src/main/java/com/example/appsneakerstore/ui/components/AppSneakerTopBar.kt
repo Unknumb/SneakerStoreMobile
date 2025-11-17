@@ -30,6 +30,8 @@ fun AppSneakerTopBar(
     var isSearchVisible by remember { mutableStateOf(false) }
     val searchQuery by productViewModel.searchQuery.collectAsState()
     val username by userViewModel.username.collectAsState()
+    val cartItems by productViewModel.cartItems.collectAsState()
+    val cartQuantity = cartItems.values.sum()
 
     TopAppBar(
         navigationIcon = {
@@ -61,8 +63,10 @@ fun AppSneakerTopBar(
             IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
                 Icon(Icons.Filled.Search, contentDescription = "Buscar")
             }
-            IconButton(onClick = onCartClick) {
-                Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito")
+            BadgedBox(badge = { if (cartQuantity > 0) Badge { Text(cartQuantity.toString()) } }) {
+                IconButton(onClick = onCartClick) {
+                    Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito")
+                }
             }
             if (username != null) {
                 IconButton(onClick = onFavoritesClick) {
