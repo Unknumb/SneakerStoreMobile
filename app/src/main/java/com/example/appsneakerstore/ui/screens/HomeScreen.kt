@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.appsneakerstore.ui.components.AppSneakerTopBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
+import com.example.appsneakerstore.viewmodel.ProductViewModelFactory
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -29,7 +30,8 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: ProductViewModel = viewModel(),
+    // AHORA usamos el factory para crear el ProductViewModel
+    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory()),
     userViewModel: UserViewModel = viewModel(),
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
@@ -93,9 +95,15 @@ fun HomeScreen(
                                     contentScale = ContentScale.Fit
                                 )
                                 Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(text = product.name, style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        text = product.name,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(text = clpFormat.format(product.price), style = MaterialTheme.typography.bodyMedium)
+                                    Text(
+                                        text = clpFormat.format(product.price),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                                 }
                             }
                             if (favorites.contains(product.id)) {

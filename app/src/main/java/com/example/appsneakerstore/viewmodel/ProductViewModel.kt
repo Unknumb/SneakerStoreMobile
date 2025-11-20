@@ -1,8 +1,8 @@
 package com.example.appsneakerstore.viewmodel
 
-import com.example.appsneakerstore.data.local.MockData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appsneakerstore.data.repository.ProductRepository
 import com.example.appsneakerstore.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -10,8 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class ProductViewModel : ViewModel() {
+class ProductViewModel(
+    private val repository: ProductRepository
+) : ViewModel() {
+
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
 
@@ -40,10 +44,25 @@ class ProductViewModel : ViewModel() {
 
     init {
         loadProducts()
+        // Si más adelante quieres, aquí puedes llamar a refreshFromBackend()
     }
 
     private fun loadProducts() {
-        _products.value = MockData.products
+        // Sigue usando MockData a través del repositorio
+        _products.value = repository.getLocalProducts()
+    }
+
+    // Ejemplo para usar el backend más adelante
+    fun refreshFromBackend() {
+        viewModelScope.launch {
+            val result = repository.fetchRemoteSneakers()
+            result.onSuccess { remoteList ->
+                if (remoteList.isNotEmpty()) {
+                    _products.value = remoteList
+                }
+            }
+            // onFailure: podrías mostrar un error en la UI si quieres
+        }
     }
 
     fun onSearchQueryChange(query: String) {
