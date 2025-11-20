@@ -7,15 +7,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsneakerstore.ui.screens.*
 import com.example.appsneakerstore.viewmodel.ProductViewModel
+import com.example.appsneakerstore.viewmodel.ProductViewModelFactory
 import com.example.appsneakerstore.viewmodel.UserViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
-    val productViewModel: ProductViewModel = viewModel()
+
+    // ViewModels creados aquí
+    val productViewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
     val userViewModel: UserViewModel = viewModel()
 
     NavHost(
@@ -30,6 +33,7 @@ fun NavGraph() {
                 onRegisterClick = { navController.navigate("register") }
             )
         }
+
         composable("register") {
             RegisterScreen(
                 userViewModel = userViewModel,
@@ -37,6 +41,7 @@ fun NavGraph() {
                 onBack = { navController.popBackStack() }
             )
         }
+
         composable("home") {
             HomeScreen(
                 viewModel = productViewModel,
@@ -49,6 +54,7 @@ fun NavGraph() {
                 onProfileClick = { navController.navigate("profile") }
             )
         }
+
         composable("favorites") {
             FavoritesScreen(
                 userViewModel = userViewModel,
@@ -59,6 +65,7 @@ fun NavGraph() {
                 }
             )
         }
+
         composable("profile") {
             ProfileScreen(
                 userViewModel = userViewModel,
@@ -66,12 +73,16 @@ fun NavGraph() {
                 onBack = { navController.popBackStack() }
             )
         }
+
         composable(
             route = "detail/{productId}",
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getInt("productId") ?: 0
-            val product = productViewModel.products.collectAsState().value.find { it.id == productId }
+            val product = productViewModel.products
+                .collectAsState()
+                .value
+                .find { it.id == productId }
 
             product?.let {
                 ProductDetailScreen(
@@ -82,6 +93,7 @@ fun NavGraph() {
                 )
             }
         }
+
         composable("cart") {
             CartScreen(
                 viewModel = productViewModel,
@@ -90,6 +102,7 @@ fun NavGraph() {
                 onCheckout = { navController.navigate("checkout") }
             )
         }
+
         composable("checkout") {
             CheckoutScreen(
                 onBack = { navController.popBackStack() },
@@ -98,6 +111,7 @@ fun NavGraph() {
                 userViewModel = userViewModel
             )
         }
+
         composable("order_success") {
             OrderSuccessScreen(onBackToHome = { navController.navigate("home") })
         }

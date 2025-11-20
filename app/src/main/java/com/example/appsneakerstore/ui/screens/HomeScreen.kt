@@ -30,7 +30,10 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+
+
     // AHORA usamos el factory para crear el ProductViewModel
+
     viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory()),
     userViewModel: UserViewModel = viewModel(),
     onProductClick: (Int) -> Unit,

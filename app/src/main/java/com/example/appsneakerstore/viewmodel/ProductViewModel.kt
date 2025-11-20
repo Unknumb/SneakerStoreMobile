@@ -43,16 +43,17 @@ class ProductViewModel(
     val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
 
     init {
+        // 1) Cargar productos locales
         loadProducts()
-        // Si más adelante quieres, aquí puedes llamar a refreshFromBackend()
+
+        // 2) Intentar refrescar desde el backend
+        refreshFromBackend()
     }
 
     private fun loadProducts() {
-        // Sigue usando MockData a través del repositorio
         _products.value = repository.getLocalProducts()
     }
 
-    // Ejemplo para usar el backend más adelante
     fun refreshFromBackend() {
         viewModelScope.launch {
             val result = repository.fetchRemoteSneakers()
@@ -61,7 +62,7 @@ class ProductViewModel(
                     _products.value = remoteList
                 }
             }
-            // onFailure: podrías mostrar un error en la UI si quieres
+            // onFailure: podrías mostrar un snackbar / log si quieres
         }
     }
 

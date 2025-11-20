@@ -1,5 +1,6 @@
 package com.example.appsneakerstore.viewmodel
 
+import com.example.appsneakerstore.viewmodel.ProductViewModelFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.appsneakerstore.data.remote.RetrofitClient
