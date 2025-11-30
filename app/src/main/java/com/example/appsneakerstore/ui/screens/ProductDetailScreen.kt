@@ -45,18 +45,16 @@ fun ProductDetailScreen(
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
     val username by userViewModel.username.collectAsState()
     val favorites by userViewModel.favorites.collectAsState()
-    val showLoginPrompt by userViewModel.showLoginPrompt.collectAsState()
     val isFavorite = favorites.contains(product.id)
 
     // Mostrar aviso de login requerido para favoritos
-    LaunchedEffect(showLoginPrompt) {
-        if (showLoginPrompt) {
-            scope.launch {
+    LaunchedEffect(Unit) {
+        userViewModel.showLoginPrompt.collect { 
+            launch {
                 snackbarHostState.showSnackbar(
                     message = "Debes iniciar sesión para agregar favoritos",
                     duration = SnackbarDuration.Short
                 )
-                userViewModel.dismissLoginPrompt()
             }
         }
     }

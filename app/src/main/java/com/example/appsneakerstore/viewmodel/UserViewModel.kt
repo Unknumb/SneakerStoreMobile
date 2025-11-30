@@ -7,8 +7,11 @@ import com.example.appsneakerstore.data.local.SessionManager
 import com.example.appsneakerstore.data.repository.UserRepository
 import com.example.appsneakerstore.model.Order
 import com.example.appsneakerstore.model.User
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -21,7 +24,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _username = MutableStateFlow<String?>(null)
     val username: StateFlow<String?> = _username.asStateFlow()
 
-    // Ahora usamos un mapa mutable para almacenar órdenes por usuario en memoria
+    // Mapa de órdenes en memoria para simular almacenamiento, pero ahora tenemos DataStore también
     private val _allOrders = MutableStateFlow<Map<String, List<Order>>>(emptyMap())
     
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
@@ -39,9 +42,9 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _hasShownLoginPopup = MutableStateFlow(false)
     val hasShownLoginPopup: StateFlow<Boolean> = _hasShownLoginPopup.asStateFlow()
     
-    // Estado para mostrar aviso de "iniciar sesión"
-    private val _showLoginPrompt = MutableStateFlow(false)
-    val showLoginPrompt: StateFlow<Boolean> = _showLoginPrompt.asStateFlow()
+    // Usar SharedFlow para eventos únicos como el aviso de login
+    private val _showLoginPrompt = MutableSharedFlow<Unit>()
+    val showLoginPrompt: SharedFlow<Unit> = _showLoginPrompt.asSharedFlow()
 
     init {
         // Restaurar sesión al iniciar
@@ -64,23 +67,25 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         // Cargar favoritos del usuario
         viewModelScope.launch {
             sessionManager.getFavoritesForUser(username).collect { userFavorites ->
-                // Solo actualizamos si el usuario sigue siendo el mismo (para evitar condiciones de carrera al logout rápido)
+                // Solo actualizamos si el usuario sigue siendo el mismo
                 if (_username.value == username) {
                     _favorites.value = userFavorites
                 }
             }
         }
         
-        // Cargar órdenes del usuario (desde memoria por ahora)
-        _orders.value = _allOrders.value[username] ?: emptyList()
+        // Cargar órdenes del usuario desde DataStore
+        viewModelScope.launch {
+            sessionManager.getOrdersForUser(username).collect { userOrders ->
+                if (_username.value == username) {
+                    _orders.value = userOrders
+                }
+            }
+        }
     }
 
     fun markLoginPopupShown() {
         _hasShownLoginPopup.value = true
-    }
-    
-    fun dismissLoginPrompt() {
-        _showLoginPrompt.value = false
     }
 
     fun login(username: String, password: String) {
@@ -107,7 +112,9 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         val currentUser = _username.value
         
         if (currentUser == null) {
-            _showLoginPrompt.value = true
+            viewModelScope.launch {
+                _showLoginPrompt.emit(Unit)
+            }
             return
         }
         
@@ -129,15 +136,15 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     fun addOrder(order: Order) {
         val currentUser = _username.value ?: return
         
-        // Actualizar mapa global de órdenes
-        val currentMap = _allOrders.value.toMutableMap()
-        val userOrders = (currentMap[currentUser] ?: emptyList()).toMutableList()
-        userOrders.add(order)
-        currentMap[currentUser] = userOrders
-        _allOrders.value = currentMap
+        // Actualizar estado en memoria (opcional, pero bueno para respuesta inmediata)
+        val currentOrders = _orders.value.toMutableList()
+        currentOrders.add(order)
+        _orders.value = currentOrders
         
-        // Actualizar estado actual observable
-        _orders.value = userOrders
+        // Persistir en DataStore
+        viewModelScope.launch {
+            sessionManager.saveOrderForUser(currentUser, order)
+        }
     }
 
     fun logout() {
