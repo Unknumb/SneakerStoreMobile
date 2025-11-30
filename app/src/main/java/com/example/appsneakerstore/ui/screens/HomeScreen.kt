@@ -55,11 +55,21 @@ fun HomeScreen(
     val showLoginSheet = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
+    // Marcar como mostrado si el usuario navega a otra pantalla (usando DisposableEffect)
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            // Si el usuario sale de Home antes de los 3 segundos, marcar como mostrado
+            if (!hasShownLoginPopup) {
+                userViewModel.markLoginPopupShown()
+            }
+        }
+    }
+
     // Mostrar login después de 3 segundos si no hay usuario logueado y es la primera vez
     LaunchedEffect(Unit) {
         if (!hasShownLoginPopup && currentUser == null) {
             delay(3000)
-            if (currentUser == null) {
+            if (currentUser == null && !hasShownLoginPopup) {
                 userViewModel.markLoginPopupShown()
                 showLoginSheet.value = true
             }
