@@ -15,6 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsneakerstore.model.Order
+import com.example.appsneakerstore.ui.components.AppBottomBar
+import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import java.text.NumberFormat
 import java.util.*
@@ -23,8 +25,13 @@ import java.util.*
 @Composable
 fun ProfileScreen(
     userViewModel: UserViewModel = viewModel(),
+    productViewModel: ProductViewModel,
     onLoginRedirect: () -> Unit,
-    onBack: () -> Unit
+    onRegisterClick: () -> Unit = {},
+    onBack: () -> Unit,
+    onHomeClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onCartClick: () -> Unit = {}
 ) {
     val username by userViewModel.username.collectAsState()
     val orders by userViewModel.orders.collectAsState()
@@ -33,12 +40,22 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil") },
+                title = { Text("Mi Cuenta") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            AppBottomBar(
+                currentRoute = "profile",
+                onHomeClick = onHomeClick,
+                onSearchClick = onSearchClick,
+                onCartClick = onCartClick,
+                onProfileClick = { /* Ya estamos en profile */ },
+                productViewModel = productViewModel
             )
         }
     ) { paddingValues ->
@@ -86,16 +103,25 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Únete a nosotros", style = MaterialTheme.typography.headlineMedium)
+                    Text("Mi Cuenta", style = MaterialTheme.typography.headlineLarge)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Inicia sesión para ver tu perfil y tus compras.")
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Inicia sesión para ver tu perfil y tus compras.", 
+                         style = MaterialTheme.typography.bodyLarge)
+                    Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = onLoginRedirect,
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = MaterialTheme.shapes.medium
                     ) {
                         Text("INICIAR SESIÓN", style = MaterialTheme.typography.labelLarge)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(
+                        onClick = onRegisterClick,
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("CREAR CUENTA", style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }

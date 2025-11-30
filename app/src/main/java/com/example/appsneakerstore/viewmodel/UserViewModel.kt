@@ -30,6 +30,13 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _registrationSuccess = MutableStateFlow(false)
     val registrationSuccess: StateFlow<Boolean> = _registrationSuccess.asStateFlow()
 
+    private val _hasShownLoginPopup = MutableStateFlow(false)
+    val hasShownLoginPopup: StateFlow<Boolean> = _hasShownLoginPopup.asStateFlow()
+
+    fun markLoginPopupShown() {
+        _hasShownLoginPopup.value = true
+    }
+
     fun login(username: String, password: String) {
         viewModelScope.launch {
             repository.getUserByUsername(username).collect {

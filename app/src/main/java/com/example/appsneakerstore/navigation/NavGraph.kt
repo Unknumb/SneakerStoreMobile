@@ -56,7 +56,8 @@ fun NavGraph() {
                 onCartClick = { navController.navigate("cart") },
                 onFavoritesClick = { navController.navigate("favorites") },
                 onProfileClick = { navController.navigate("profile") },
-                onLoginClick = { navController.navigate("login") }
+                onLoginClick = { navController.navigate("login") },
+                onSearchClick = { navController.navigate("search") }
             )
         }
 
@@ -71,11 +72,29 @@ fun NavGraph() {
             )
         }
 
+        composable("search") {
+            SearchScreen(
+                productViewModel = productViewModel,
+                userViewModel = userViewModel,
+                onProductClick = { productId ->
+                    navController.navigate("detail/$productId")
+                },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                onCartClick = { navController.navigate("cart") },
+                onProfileClick = { navController.navigate("profile") }
+            )
+        }
+
         composable("profile") {
             ProfileScreen(
                 userViewModel = userViewModel,
+                productViewModel = productViewModel,
                 onLoginRedirect = { navController.navigate("login") },
-                onBack = { navController.popBackStack() }
+                onRegisterClick = { navController.navigate("register") },
+                onBack = { navController.popBackStack() },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                onSearchClick = { navController.navigate("search") },
+                onCartClick = { navController.navigate("cart") }
             )
         }
 
@@ -104,7 +123,10 @@ fun NavGraph() {
                 viewModel = productViewModel,
                 userViewModel = userViewModel,
                 onBack = { navController.popBackStack() },
-                onCheckout = { navController.navigate("checkout") }
+                onCheckout = { navController.navigate("checkout") },
+                onHomeClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                onSearchClick = { navController.navigate("search") },
+                onProfileClick = { navController.navigate("profile") }
             )
         }
 

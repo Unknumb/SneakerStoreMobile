@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.appsneakerstore.ui.components.AppBottomBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import java.text.NumberFormat
@@ -30,11 +31,15 @@ fun CartScreen(
     viewModel: ProductViewModel,
     userViewModel: UserViewModel = viewModel(),
     onBack: () -> Unit,
-    onCheckout: () -> Unit
+    onCheckout: () -> Unit,
+    onHomeClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val cartMap by viewModel.cartItems.collectAsState()
     val totalAmount = cartMap.entries.sumOf { it.key.price * it.value }
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
+    val currentUser by userViewModel.username.collectAsState()
 
     Scaffold(
         topBar = {
@@ -45,6 +50,16 @@ fun CartScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            AppBottomBar(
+                currentRoute = "cart",
+                onHomeClick = onHomeClick,
+                onSearchClick = onSearchClick,
+                onCartClick = { /* Ya estamos en cart */ },
+                onProfileClick = onProfileClick,
+                productViewModel = viewModel
             )
         }
     ) { paddingValues ->

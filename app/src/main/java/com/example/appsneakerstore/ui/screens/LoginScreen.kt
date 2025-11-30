@@ -91,8 +91,12 @@ fun LoginScreen(
                 Text("INICIAR SESIÓN", style = MaterialTheme.typography.labelLarge)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = onRegisterClick) {
-                Text("CREAR CUENTA")
+            OutlinedButton(
+                onClick = onRegisterClick,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("CREAR CUENTA", style = MaterialTheme.typography.labelLarge)
             }
         }
     }

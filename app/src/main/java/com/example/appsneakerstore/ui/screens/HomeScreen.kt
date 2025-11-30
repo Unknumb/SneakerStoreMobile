@@ -12,9 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,12 +19,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.example.appsneakerstore.ui.components.AppSneakerTopBar
+import com.example.appsneakerstore.ui.components.AppBottomBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.ProductViewModelFactory
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
 
@@ -40,48 +36,47 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onFavoritesClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onLoginClick: () -> Unit = {}
+    onLoginClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {}
 ) {
     val productList by viewModel.filteredProducts.collectAsState()
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
     val favorites by userViewModel.favorites.collectAsState()
     val currentUser by userViewModel.username.collectAsState()
-    val hasShownLogin = rememberSaveable { mutableStateOf(false) }
+    val hasShownLoginPopup by userViewModel.hasShownLoginPopup.collectAsState()
 
     // Mostrar login después de 3 segundos si no hay usuario logueado y es la primera vez
     LaunchedEffect(Unit) {
-        if (!hasShownLogin.value && currentUser == null) {
+        if (!hasShownLoginPopup && currentUser == null) {
             delay(3000)
             if (currentUser == null) {
-                hasShownLogin.value = true
+                userViewModel.markLoginPopupShown()
                 onLoginClick()
             }
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ProfileScreen(
-                userViewModel = userViewModel,
-                onLoginRedirect = onProfileClick,
-                onBack = { scope.launch { drawerState.close() } }
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Sneaker Store", style = MaterialTheme.typography.titleLarge) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black
+                )
+            )
+        },
+        bottomBar = {
+            AppBottomBar(
+                currentRoute = "home",
+                onHomeClick = { /* Ya estamos en home */ },
+                onSearchClick = onSearchClick,
+                onCartClick = onCartClick,
+                onProfileClick = onProfileClick,
+                productViewModel = viewModel
             )
         }
-    ) {
-        Scaffold(
-            topBar = {
-                AppSneakerTopBar(
-                    openDrawer = { scope.launch { drawerState.open() } },
-                    onCartClick = onCartClick,
-                    onFavoritesClick = onFavoritesClick,
-                    userViewModel = userViewModel,
-                    productViewModel = viewModel
-                )
-            }
-        ) { paddingValues ->
+    ) { paddingValues ->
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
@@ -136,7 +131,6 @@ fun HomeScreen(
                         }
                     }
                 }
-            }
-        }
     }
+}
 }
