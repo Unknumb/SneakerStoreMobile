@@ -1,6 +1,8 @@
 package com.example.appsneakerstore.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,8 +22,8 @@ import com.example.appsneakerstore.viewmodel.UserViewModel
 fun LoginScreen(
     userViewModel: UserViewModel = viewModel(),
     onLogin: () -> Unit,
-    onGuestLogin: () -> Unit,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    onClose: () -> Unit
 ) {
     val usernameState by userViewModel.username.collectAsState()
     val errorState by userViewModel.loginError.collectAsState()
@@ -37,7 +39,17 @@ fun LoginScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Sneaker Store") })
+            TopAppBar(
+                title = { Text("Sneaker Store") },
+                actions = {
+                    IconButton(onClick = onClose) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Cerrar"
+                        )
+                    }
+                }
+            )
         }
     ) {
         Column(
@@ -79,14 +91,8 @@ fun LoginScreen(
                 Text("INICIAR SESIÓN", style = MaterialTheme.typography.labelLarge)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Row {
-                TextButton(onClick = onRegisterClick) {
-                    Text("CREAR CUENTA")
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                TextButton(onClick = onGuestLogin) {
-                    Text("ENTRAR COMO INVITADO")
-                }
+            TextButton(onClick = onRegisterClick) {
+                Text("CREAR CUENTA")
             }
         }
     }

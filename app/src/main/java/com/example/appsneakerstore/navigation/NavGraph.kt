@@ -23,14 +23,18 @@ fun NavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "home"
     ) {
         composable("login") {
             LoginScreen(
                 userViewModel = userViewModel,
-                onLogin = { navController.navigate("home") },
-                onGuestLogin = { navController.navigate("home") },
-                onRegisterClick = { navController.navigate("register") }
+                onLogin = { 
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                },
+                onRegisterClick = { navController.navigate("register") },
+                onClose = { navController.popBackStack() }
             )
         }
 
@@ -51,7 +55,8 @@ fun NavGraph() {
                 },
                 onCartClick = { navController.navigate("cart") },
                 onFavoritesClick = { navController.navigate("favorites") },
-                onProfileClick = { navController.navigate("profile") }
+                onProfileClick = { navController.navigate("profile") },
+                onLoginClick = { navController.navigate("login") }
             )
         }
 

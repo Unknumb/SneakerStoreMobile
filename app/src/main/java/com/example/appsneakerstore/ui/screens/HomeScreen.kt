@@ -9,9 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +26,7 @@ import com.example.appsneakerstore.ui.components.AppSneakerTopBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
 import com.example.appsneakerstore.viewmodel.ProductViewModelFactory
 import com.example.appsneakerstore.viewmodel.UserViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
@@ -30,22 +34,32 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-
-
-    // AHORA usamos el factory para crear el ProductViewModel
-
     viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory()),
     userViewModel: UserViewModel = viewModel(),
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
     onFavoritesClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onLoginClick: () -> Unit = {}
 ) {
     val productList by viewModel.filteredProducts.collectAsState()
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val favorites by userViewModel.favorites.collectAsState()
+    val currentUser by userViewModel.username.collectAsState()
+    val hasShownLogin = rememberSaveable { mutableStateOf(false) }
+
+    // Mostrar login después de 3 segundos si no hay usuario logueado y es la primera vez
+    LaunchedEffect(Unit) {
+        if (!hasShownLogin.value && currentUser == null) {
+            delay(3000)
+            if (currentUser == null) {
+                hasShownLogin.value = true
+                onLoginClick()
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
