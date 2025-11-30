@@ -10,12 +10,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -51,6 +54,41 @@ fun SearchScreen(
     
     val focusManager = LocalFocusManager.current
     val gridState = rememberLazyGridState()
+    
+    // Estados para filtros y ordenamiento
+    val showBrandFilter = remember { mutableStateOf(false) }
+    val showSortOptions = remember { mutableStateOf(false) }
+    val selectedBrands = remember { mutableStateOf(setOf<String>()) }
+    val sortBy = remember { mutableStateOf("none") } // "none", "brand", "price"
+    val isAscending = remember { mutableStateOf(true) }
+    
+    // Obtener marcas únicas
+    val allBrands = remember(productList) {
+        productList.map { it.name.split(" ").firstOrNull() ?: "" }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .sorted()
+    }
+    
+    // Filtrar y ordenar productos
+    val filteredAndSortedProducts = remember(productList, selectedBrands.value, sortBy.value, isAscending.value) {
+        var result = if (selectedBrands.value.isEmpty()) {
+            productList
+        } else {
+            productList.filter { product ->
+                val brand = product.name.split(" ").firstOrNull() ?: ""
+                selectedBrands.value.contains(brand)
+            }
+        }
+        
+        result = when (sortBy.value) {
+            "brand" -> if (isAscending.value) result.sortedBy { it.name } else result.sortedByDescending { it.name }
+            "price" -> if (isAscending.value) result.sortedBy { it.price } else result.sortedByDescending { it.price }
+            else -> result
+        }
+        
+        result
+    }
 
     // Ocultar teclado al hacer scroll
     LaunchedEffect(gridState) {
@@ -78,20 +116,135 @@ fun SearchScreen(
                         titleContentColor = Color.Black
                     )
                 )
-                TextField(
+                
+                // Campo de búsqueda con estilo OutlinedTextField
+                OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { productViewModel.onSearchQueryChange(it) },
                     placeholder = { Text("Buscar zapatillas...") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.LightGray.copy(alpha = 0.3f),
-                        unfocusedContainerColor = Color.LightGray.copy(alpha = 0.3f)
-                    ),
                     shape = MaterialTheme.shapes.medium,
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
                 )
+                
+                // Fila de filtros
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Botón de marcas
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedButton(
+                            onClick = { showBrandFilter.value = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text(
+                                if (selectedBrands.value.isEmpty()) "Todas las marcas" 
+                                else "${selectedBrands.value.size} marcas",
+                                maxLines = 1
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showBrandFilter.value,
+                            onDismissRequest = { showBrandFilter.value = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Limpiar filtros") },
+                                onClick = {
+                                    selectedBrands.value = emptySet()
+                                    showBrandFilter.value = false
+                                }
+                            )
+                            HorizontalDivider()
+                            allBrands.forEach { brand ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Checkbox(
+                                                checked = selectedBrands.value.contains(brand),
+                                                onCheckedChange = null
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(brand)
+                                        }
+                                    },
+                                    onClick = {
+                                        selectedBrands.value = if (selectedBrands.value.contains(brand)) {
+                                            selectedBrands.value - brand
+                                        } else {
+                                            selectedBrands.value + brand
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Botón de ordenar
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedButton(
+                            onClick = { showSortOptions.value = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text(
+                                when (sortBy.value) {
+                                    "brand" -> "Por marca"
+                                    "price" -> "Por precio"
+                                    else -> "Ordenar por"
+                                },
+                                maxLines = 1
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortOptions.value,
+                            onDismissRequest = { showSortOptions.value = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Sin ordenar") },
+                                onClick = {
+                                    sortBy.value = "none"
+                                    showSortOptions.value = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Por marca") },
+                                onClick = {
+                                    sortBy.value = "brand"
+                                    showSortOptions.value = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Por precio") },
+                                onClick = {
+                                    sortBy.value = "price"
+                                    showSortOptions.value = false
+                                }
+                            )
+                        }
+                    }
+                    
+                    // Botón de dirección (asc/desc)
+                    FilledTonalIconButton(
+                        onClick = { isAscending.value = !isAscending.value },
+                        enabled = sortBy.value != "none"
+                    ) {
+                        Icon(
+                            imageVector = if (isAscending.value) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                            contentDescription = if (isAscending.value) "Ascendente" else "Descendente"
+                        )
+                    }
+                }
             }
         },
         bottomBar = {
@@ -120,7 +273,7 @@ fun SearchScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(productList) { product ->
+            items(filteredAndSortedProducts) { product ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
