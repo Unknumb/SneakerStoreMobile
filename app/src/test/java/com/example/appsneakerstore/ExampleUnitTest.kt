@@ -1,17 +1,20 @@
 package com.example.appsneakerstore
 
 import org.junit.Test
-
 import org.junit.Assert.*
 
 /**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * Unit tests básicos de la aplicación.
+ * Tests principales en:
+ * - ProductViewModelTest.kt (19 tests)
+ * - ProductRepositoryTest.kt (8 tests)
+ * - ProductModelTest.kt (13 tests)
+ * - SneakerMapperTest.kt (13 tests)
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun `app package is correct`() {
+        val expectedPackage = "com.example.appsneakerstore"
+        assertEquals(expectedPackage, this.javaClass.packageName)
     }
 }
