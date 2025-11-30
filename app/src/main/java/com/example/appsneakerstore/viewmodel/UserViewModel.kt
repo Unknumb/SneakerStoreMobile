@@ -10,7 +10,7 @@ import com.example.appsneakerstore.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class UserViewModel(application: Application) : AndroidViewModel(application) {
@@ -21,6 +21,9 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _username = MutableStateFlow<String?>(null)
     val username: StateFlow<String?> = _username.asStateFlow()
 
+    // Ahora usamos un mapa mutable para almacenar órdenes por usuario en memoria
+    private val _allOrders = MutableStateFlow<Map<String, List<Order>>>(emptyMap())
+    
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
 
@@ -35,37 +38,56 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _hasShownLoginPopup = MutableStateFlow(false)
     val hasShownLoginPopup: StateFlow<Boolean> = _hasShownLoginPopup.asStateFlow()
+    
+    // Estado para mostrar aviso de "iniciar sesión"
+    private val _showLoginPrompt = MutableStateFlow(false)
+    val showLoginPrompt: StateFlow<Boolean> = _showLoginPrompt.asStateFlow()
 
     init {
-        // Restaurar sesión y favoritos al iniciar
+        // Restaurar sesión al iniciar
         viewModelScope.launch {
-            // Restaurar usuario logueado
-            sessionManager.loggedInUsername.collect { savedUsername ->
-                if (savedUsername != null && _username.value == null) {
-                    _username.value = savedUsername
-                    _hasShownLoginPopup.value = true // No mostrar popup si ya está logueado
+            sessionManager.loggedInUsername.collectLatest { savedUsername ->
+                _username.value = savedUsername
+                if (savedUsername != null) {
+                    _hasShownLoginPopup.value = true
+                    loadUserData(savedUsername)
+                } else {
+                    // Limpiar datos inmediatamente si no hay usuario
+                    _favorites.value = emptySet()
+                    _orders.value = emptyList()
                 }
             }
         }
+    }
+    
+    private fun loadUserData(username: String) {
+        // Cargar favoritos del usuario
         viewModelScope.launch {
-            // Restaurar favoritos
-            sessionManager.favorites.collect { savedFavorites ->
-                _favorites.value = savedFavorites
+            sessionManager.getFavoritesForUser(username).collect { userFavorites ->
+                // Solo actualizamos si el usuario sigue siendo el mismo (para evitar condiciones de carrera al logout rápido)
+                if (_username.value == username) {
+                    _favorites.value = userFavorites
+                }
             }
         }
+        
+        // Cargar órdenes del usuario (desde memoria por ahora)
+        _orders.value = _allOrders.value[username] ?: emptyList()
     }
 
     fun markLoginPopupShown() {
         _hasShownLoginPopup.value = true
     }
+    
+    fun dismissLoginPrompt() {
+        _showLoginPrompt.value = false
+    }
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            repository.getUserByUsername(username).collect {
-                if (it?.password == password) {
-                    _username.value = username
+            repository.getUserByUsername(username).collect { user ->
+                if (user?.password == password) {
                     _loginError.value = null
-                    // Guardar sesión en DataStore
                     sessionManager.saveSession(username)
                 } else {
                     _loginError.value = "Usuario o contraseña incorrectos"
@@ -82,34 +104,49 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleFavorite(productId: Int) {
+        val currentUser = _username.value
+        
+        if (currentUser == null) {
+            _showLoginPrompt.value = true
+            return
+        }
+        
         val currentFavorites = _favorites.value.toMutableSet()
+        
         if (currentFavorites.contains(productId)) {
             currentFavorites.remove(productId)
         } else {
             currentFavorites.add(productId)
         }
+        
         _favorites.value = currentFavorites
         
-        // Guardar favoritos en DataStore
         viewModelScope.launch {
-            sessionManager.saveFavorites(currentFavorites)
+            sessionManager.saveFavoritesForUser(currentUser, currentFavorites)
         }
     }
 
     fun addOrder(order: Order) {
-        val currentOrders = _orders.value.toMutableList()
-        currentOrders.add(order)
-        _orders.value = currentOrders
+        val currentUser = _username.value ?: return
+        
+        // Actualizar mapa global de órdenes
+        val currentMap = _allOrders.value.toMutableMap()
+        val userOrders = (currentMap[currentUser] ?: emptyList()).toMutableList()
+        userOrders.add(order)
+        currentMap[currentUser] = userOrders
+        _allOrders.value = currentMap
+        
+        // Actualizar estado actual observable
+        _orders.value = userOrders
     }
 
     fun logout() {
-        _username.value = null
-        _orders.value = emptyList()
-        // No borrar favoritos al cerrar sesión (pueden ser favoritos del dispositivo)
-        
-        // Limpiar sesión en DataStore
         viewModelScope.launch {
             sessionManager.clearSession()
+            // Forzar limpieza inmediata de estados en memoria
+            _username.value = null
+            _favorites.value = emptySet()
+            _orders.value = emptyList()
         }
     }
 

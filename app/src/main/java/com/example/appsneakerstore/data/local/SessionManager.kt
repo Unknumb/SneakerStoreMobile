@@ -17,7 +17,6 @@ class SessionManager(private val context: Context) {
     
     companion object {
         private val USERNAME_KEY = stringPreferencesKey("logged_in_username")
-        private val FAVORITES_KEY = stringSetPreferencesKey("favorites")
     }
     
     // Obtener usuario logueado
@@ -39,28 +38,19 @@ class SessionManager(private val context: Context) {
         }
     }
     
-    // Obtener favoritos
-    val favorites: Flow<Set<Int>> = context.dataStore.data.map { preferences ->
-        preferences[FAVORITES_KEY]?.map { it.toInt() }?.toSet() ?: emptySet()
-    }
-    
-    // Guardar favoritos
-    suspend fun saveFavorites(favoriteIds: Set<Int>) {
-        context.dataStore.edit { preferences ->
-            preferences[FAVORITES_KEY] = favoriteIds.map { it.toString() }.toSet()
+    // Obtener favoritos (dependientes del usuario)
+    fun getFavoritesForUser(username: String): Flow<Set<Int>> {
+        val key = stringSetPreferencesKey("favorites_$username")
+        return context.dataStore.data.map { preferences ->
+            preferences[key]?.map { it.toInt() }?.toSet() ?: emptySet()
         }
     }
     
-    // Agregar/quitar favorito
-    suspend fun toggleFavorite(productId: Int) {
+    // Guardar favoritos para un usuario específico
+    suspend fun saveFavoritesForUser(username: String, favoriteIds: Set<Int>) {
+        val key = stringSetPreferencesKey("favorites_$username")
         context.dataStore.edit { preferences ->
-            val currentFavorites = preferences[FAVORITES_KEY]?.map { it.toInt() }?.toMutableSet() ?: mutableSetOf()
-            if (currentFavorites.contains(productId)) {
-                currentFavorites.remove(productId)
-            } else {
-                currentFavorites.add(productId)
-            }
-            preferences[FAVORITES_KEY] = currentFavorites.map { it.toString() }.toSet()
+            preferences[key] = favoriteIds.map { it.toString() }.toSet()
         }
     }
 }

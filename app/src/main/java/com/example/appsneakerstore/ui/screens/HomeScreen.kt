@@ -52,11 +52,15 @@ fun HomeScreen(
     val favorites by userViewModel.favorites.collectAsState()
     val currentUser by userViewModel.username.collectAsState()
     val hasShownLoginPopup by userViewModel.hasShownLoginPopup.collectAsState()
+    val showLoginPrompt by userViewModel.showLoginPrompt.collectAsState()
     
     // Estado para el BottomSheet
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val showLoginSheet = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    
+    // Snackbar host state para mensajes
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Marcar como mostrado si el usuario navega a otra pantalla (usando DisposableEffect)
     androidx.compose.runtime.DisposableEffect(Unit) {
@@ -85,6 +89,24 @@ fun HomeScreen(
             scope.launch {
                 sheetState.hide()
                 showLoginSheet.value = false
+            }
+        }
+    }
+    
+    // Mostrar aviso de login requerido para favoritos
+    LaunchedEffect(showLoginPrompt) {
+        if (showLoginPrompt) {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Debes iniciar sesión para agregar favoritos",
+                    actionLabel = "Login",
+                    duration = SnackbarDuration.Short
+                ).let { result ->
+                    if (result == SnackbarResult.ActionPerformed) {
+                        showLoginSheet.value = true
+                    }
+                }
+                userViewModel.dismissLoginPrompt()
             }
         }
     }
@@ -127,7 +149,8 @@ fun HomeScreen(
                 onProfileClick = onProfileClick,
                 productViewModel = viewModel
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),

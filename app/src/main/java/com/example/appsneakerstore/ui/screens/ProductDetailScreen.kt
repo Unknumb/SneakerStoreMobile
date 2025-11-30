@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +45,21 @@ fun ProductDetailScreen(
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
     val username by userViewModel.username.collectAsState()
     val favorites by userViewModel.favorites.collectAsState()
+    val showLoginPrompt by userViewModel.showLoginPrompt.collectAsState()
     val isFavorite = favorites.contains(product.id)
+
+    // Mostrar aviso de login requerido para favoritos
+    LaunchedEffect(showLoginPrompt) {
+        if (showLoginPrompt) {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = "Debes iniciar sesión para agregar favoritos",
+                    duration = SnackbarDuration.Short
+                )
+                userViewModel.dismissLoginPrompt()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -56,13 +71,11 @@ fun ProductDetailScreen(
                     }
                 },
                 actions = {
-                    if (username != null) {
-                        IconButton(onClick = { userViewModel.toggleFavorite(product.id) }) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                contentDescription = "Favorite"
-                            )
-                        }
+                    IconButton(onClick = { userViewModel.toggleFavorite(product.id) }) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = "Favorite"
+                        )
                     }
                 }
             )
