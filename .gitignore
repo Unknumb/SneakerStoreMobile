@@ -1,15 +1,37 @@
+# Archivos de IntelliJ/Android Studio
 *.iml
 .gradle
-/local.properties
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
-.DS_Store
+/.idea/deploymentTargetSelector.xml
+/.idea/deviceManager.xml
+
+# Kotlin
+/.kotlin/
+
+# Configuración local
+local.properties
+
+# Build
 /build
+/app/build
+
+# Capturas y profiling
 /captures
+*.hprof
+
+# Native build
 .externalNativeBuild
 .cxx
-local.properties
+
+# macOS
+.DS_Store
+
+# Keystores (excepto debug)
+*.jks
+*.keystore
+!debug.keystore
