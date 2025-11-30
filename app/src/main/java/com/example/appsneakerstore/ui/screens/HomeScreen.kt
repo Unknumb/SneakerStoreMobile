@@ -17,11 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.appsneakerstore.ui.components.AppBottomBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
-import com.example.appsneakerstore.viewmodel.ProductViewModelFactory
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 import java.text.NumberFormat
@@ -30,8 +28,8 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory()),
-    userViewModel: UserViewModel = viewModel(),
+    viewModel: ProductViewModel,
+    userViewModel: UserViewModel,
     onProductClick: (Int) -> Unit,
     onCartClick: () -> Unit,
     onFavoritesClick: () -> Unit,

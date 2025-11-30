@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.appsneakerstore.model.Product
 import com.example.appsneakerstore.viewmodel.ProductViewModel
@@ -36,7 +35,7 @@ import java.util.*
 fun ProductDetailScreen(
     product: Product,
     viewModel: ProductViewModel,
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModel,
     onBack: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }

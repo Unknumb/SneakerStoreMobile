@@ -32,7 +32,7 @@ class ProductViewModel(
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Lazily,
             initialValue = emptyList()
         )
 
@@ -46,8 +46,8 @@ class ProductViewModel(
         // 1) Cargar productos locales
         loadProducts()
 
-        // 2) Intentar refrescar desde el backend
-        refreshFromBackend()
+        // 2) Backend desactivado temporalmente (las imágenes del backend están vacías)
+        // refreshFromBackend()
     }
 
     private fun loadProducts() {

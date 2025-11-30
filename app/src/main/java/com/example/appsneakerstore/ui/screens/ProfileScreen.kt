@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsneakerstore.model.Order
 import com.example.appsneakerstore.ui.components.AppBottomBar
 import com.example.appsneakerstore.viewmodel.ProductViewModel
@@ -24,7 +23,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    userViewModel: UserViewModel = viewModel(),
+    userViewModel: UserViewModel,
     productViewModel: ProductViewModel,
     onLoginRedirect: () -> Unit,
     onRegisterClick: () -> Unit = {},
