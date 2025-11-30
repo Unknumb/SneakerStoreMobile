@@ -20,6 +20,19 @@ import com.example.appsneakerstore.model.User
 import com.example.appsneakerstore.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
+// Funciones de validación
+private fun isValidPassword(password: String): Boolean {
+    return password.length >= 6
+}
+
+private fun hasNumber(password: String): Boolean {
+    return password.any { it.isDigit() }
+}
+
+private fun hasNoSpaces(text: String): Boolean {
+    return !text.contains(" ")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -33,6 +46,57 @@ fun RegisterScreen(
     val registrationSuccess by userViewModel.registrationSuccess.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    
+    // Estados de error de validación
+    val usernameError = remember { mutableStateOf<String?>(null) }
+    val passwordError = remember { mutableStateOf<String?>(null) }
+    val confirmPasswordError = remember { mutableStateOf<String?>(null) }
+    
+    // Función para validar campos
+    fun validateFields(): Boolean {
+        var isValid = true
+        
+        // Validar usuario
+        if (username.value.isBlank()) {
+            usernameError.value = "El usuario es requerido"
+            isValid = false
+        } else if (username.value.length < 3) {
+            usernameError.value = "Mínimo 3 caracteres"
+            isValid = false
+        } else if (!hasNoSpaces(username.value)) {
+            usernameError.value = "No puede contener espacios"
+            isValid = false
+        } else {
+            usernameError.value = null
+        }
+        
+        // Validar contraseña
+        if (password.value.isBlank()) {
+            passwordError.value = "La contraseña es requerida"
+            isValid = false
+        } else if (!isValidPassword(password.value)) {
+            passwordError.value = "Mínimo 6 caracteres"
+            isValid = false
+        } else if (!hasNumber(password.value)) {
+            passwordError.value = "Debe contener al menos 1 número"
+            isValid = false
+        } else {
+            passwordError.value = null
+        }
+        
+        // Validar confirmación
+        if (confirmPassword.value.isBlank()) {
+            confirmPasswordError.value = "Confirma tu contraseña"
+            isValid = false
+        } else if (password.value != confirmPassword.value) {
+            confirmPasswordError.value = "Las contraseñas no coinciden"
+            isValid = false
+        } else {
+            confirmPasswordError.value = null
+        }
+        
+        return isValid
+    }
 
     LaunchedEffect(registrationSuccess) {
         if (registrationSuccess) {
@@ -69,40 +133,67 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
                 value = username.value,
-                onValueChange = { username.value = it },
+                onValueChange = { 
+                    username.value = it
+                    usernameError.value = null
+                },
                 label = { Text("Usuario") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                isError = usernameError.value != null,
+                supportingText = {
+                    usernameError.value?.let { error ->
+                        Text(error, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = password.value,
-                onValueChange = { password.value = it },
+                onValueChange = { 
+                    password.value = it
+                    passwordError.value = null
+                },
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+                isError = passwordError.value != null,
+                supportingText = {
+                    if (passwordError.value != null) {
+                        Text(passwordError.value!!, color = MaterialTheme.colorScheme.error)
+                    } else {
+                        Text("Mínimo 6 caracteres y 1 número", color = MaterialTheme.colorScheme.outline)
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = confirmPassword.value,
-                onValueChange = { confirmPassword.value = it },
+                onValueChange = { 
+                    confirmPassword.value = it
+                    confirmPasswordError.value = null
+                },
                 label = { Text("Confirmar contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium,
-                isError = password.value != confirmPassword.value
+                isError = confirmPasswordError.value != null,
+                supportingText = {
+                    confirmPasswordError.value?.let { error ->
+                        Text(error, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
-                    if (password.value == confirmPassword.value) {
+                    if (validateFields()) {
                         userViewModel.register(User(username = username.value, password = password.value))
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = MaterialTheme.shapes.medium,
-                enabled = username.value.isNotBlank() && password.value.isNotBlank() && password.value == confirmPassword.value
+                shape = MaterialTheme.shapes.medium
             ) {
                 Text("REGISTRARSE", style = MaterialTheme.typography.labelLarge)
             }
