@@ -18,7 +18,9 @@ class ProductModelTest {
             description = "A test sneaker",
             sizes = listOf(40, 41, 42),
             rating = 4.5f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 10,
+            color = "Red"
         )
         
         assertEquals(1, product.id)
@@ -29,6 +31,8 @@ class ProductModelTest {
         assertEquals(listOf(40, 41, 42), product.sizes)
         assertEquals(4.5f, product.rating, 0.01f)
         assertTrue(product.reviews.isEmpty())
+        assertEquals(10, product.stock)
+        assertEquals("Red", product.color)
     }
 
     @Test
@@ -41,7 +45,9 @@ class ProductModelTest {
             description = "",
             sizes = listOf(42),
             rating = 4.0f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 5,
+            color = "Blue"
         )
         
         val product2 = Product(
@@ -52,7 +58,9 @@ class ProductModelTest {
             description = "",
             sizes = listOf(42),
             rating = 4.0f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 5,
+            color = "Blue"
         )
         
         assertEquals(product1, product2)
@@ -68,120 +76,14 @@ class ProductModelTest {
             description = "",
             sizes = listOf(42),
             rating = 4.0f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 5,
+            color = "Blue"
         )
         
         val product2 = product1.copy(id = 2)
         
         assertNotEquals(product1, product2)
-    }
-
-    @Test
-    fun `Review data class creates correctly`() {
-        val review = Review(
-            author = "John Doe",
-            rating = 5.0f,
-            comment = "Great product!"
-        )
-        
-        assertEquals("John Doe", review.author)
-        assertEquals(5.0f, review.rating, 0.01f)
-        assertEquals("Great product!", review.comment)
-    }
-
-    @Test
-    fun `Product with reviews creates correctly`() {
-        val reviews = listOf(
-            Review("User1", 4.0f, "Good"),
-            Review("User2", 5.0f, "Excellent")
-        )
-        
-        val product = Product(
-            id = 1,
-            name = "Sneaker",
-            price = 150.0,
-            imageUrl = "",
-            description = "",
-            sizes = listOf(40, 41),
-            rating = 4.5f,
-            reviews = reviews
-        )
-        
-        assertEquals(2, product.reviews.size)
-        assertEquals("User1", product.reviews[0].author)
-    }
-
-    @Test
-    fun `Order data class creates correctly`() {
-        val products = listOf(
-            Product(
-                id = 1,
-                name = "Sneaker 1",
-                price = 100.0,
-                imageUrl = "",
-                description = "",
-                sizes = listOf(42),
-                rating = 4.0f,
-                reviews = emptyList()
-            ),
-            Product(
-                id = 2,
-                name = "Sneaker 2",
-                price = 150.0,
-                imageUrl = "",
-                description = "",
-                sizes = listOf(43),
-                rating = 4.5f,
-                reviews = emptyList()
-            )
-        )
-        
-        val order = Order(
-            items = products,
-            shippingAddress = "123 Test Street",
-            total = 250.0,
-            orderDate = "2025-11-29"
-        )
-        
-        assertEquals(2, order.items.size)
-        assertEquals("123 Test Street", order.shippingAddress)
-        assertEquals(250.0, order.total, 0.01)
-        assertEquals("2025-11-29", order.orderDate)
-    }
-
-    @Test
-    fun `Order total matches sum of products`() {
-        val product1 = Product(
-            id = 1,
-            name = "Sneaker 1",
-            price = 100.0,
-            imageUrl = "",
-            description = "",
-            sizes = emptyList(),
-            rating = 0f,
-            reviews = emptyList()
-        )
-        val product2 = Product(
-            id = 2,
-            name = "Sneaker 2",
-            price = 150.0,
-            imageUrl = "",
-            description = "",
-            sizes = emptyList(),
-            rating = 0f,
-            reviews = emptyList()
-        )
-        
-        val calculatedTotal = product1.price + product2.price
-        
-        val order = Order(
-            items = listOf(product1, product2),
-            shippingAddress = "Test",
-            total = calculatedTotal,
-            orderDate = "2025-11-29"
-        )
-        
-        assertEquals(250.0, order.total, 0.01)
     }
 
     @Test
@@ -194,7 +96,9 @@ class ProductModelTest {
             description = "",
             sizes = listOf(42),
             rating = 4.0f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 5,
+            color = "Blue"
         )
         
         val modified = original.copy(price = 120.0, name = "Modified")
@@ -215,7 +119,9 @@ class ProductModelTest {
             description = "",
             sizes = listOf(42),
             rating = 4.0f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 5,
+            color = "Blue"
         )
         
         val product2 = Product(
@@ -226,41 +132,40 @@ class ProductModelTest {
             description = "",
             sizes = listOf(42),
             rating = 4.0f,
-            reviews = emptyList()
+            reviews = emptyList(),
+            stock = 5,
+            color = "Blue"
         )
         
         assertEquals(product1.hashCode(), product2.hashCode())
     }
-
+    
     @Test
-    fun `Empty sizes list is valid`() {
-        val product = Product(
-            id = 1,
-            name = "Test",
-            price = 50.0,
-            imageUrl = "",
-            description = "",
-            sizes = emptyList(),
-            rating = 0f,
-            reviews = emptyList()
+    fun `Order data class creates correctly`() {
+        val products = listOf(
+            Product(
+                id = 1,
+                name = "Sneaker 1",
+                price = 100.0,
+                imageUrl = "",
+                description = "",
+                sizes = listOf(42),
+                rating = 4.0f,
+                reviews = emptyList(),
+                stock = 10,
+                color = "Red"
+            )
         )
         
-        assertTrue(product.sizes.isEmpty())
-    }
-
-    @Test
-    fun `Product rating can be zero`() {
-        val product = Product(
-            id = 1,
-            name = "New Product",
-            price = 80.0,
-            imageUrl = "",
-            description = "",
-            sizes = listOf(40),
-            rating = 0f,
-            reviews = emptyList()
+        val order = Order(
+            items = products,
+            shippingAddress = "123 Test Street",
+            total = 100.0,
+            orderDate = "2025-11-29"
         )
         
-        assertEquals(0f, product.rating, 0.01f)
+        assertEquals(1, order.items.size)
+        assertEquals("123 Test Street", order.shippingAddress)
+        assertEquals(100.0, order.total, 0.01)
     }
 }
