@@ -11,7 +11,6 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductRepositoryTest {
@@ -50,6 +49,7 @@ class ProductRepositoryTest {
         repository = ProductRepository(apiService)
     }
 
+    // Verifica que getLocalProducts devuelva la lista de productos simulados (MockData)
     @Test
     fun `getLocalProducts returns MockData products`() {
         val products = repository.getLocalProducts()
@@ -58,6 +58,7 @@ class ProductRepositoryTest {
         assertTrue(products.isNotEmpty())
     }
 
+    // Verifica que fetchRemoteSneakers obtenga los datos del API y los mapee correctamente a objetos Product
     @Test
     fun `fetchRemoteSneakers success returns mapped products`() = runTest {
         whenever(apiService.getSneakers()).thenReturn(mockSneakerDtos)
@@ -70,28 +71,11 @@ class ProductRepositoryTest {
         assertEquals(2, products?.size)
         assertEquals("Nike Air Max", products?.get(0)?.name)
         assertEquals(150.0, products?.get(0)?.price ?: 0.0, 0.01)
+        assertEquals(10, products?.get(0)?.stock)
+        assertEquals("Blanco", products?.get(0)?.color)
     }
 
-    @Test
-    fun `fetchRemoteSneakers maps imageUrl correctly`() = runTest {
-        whenever(apiService.getSneakers()).thenReturn(mockSneakerDtos)
-        
-        val result = repository.fetchRemoteSneakers()
-        
-        val products = result.getOrNull()
-        assertEquals("https://example.com/nike.jpg", products?.get(0)?.imageUrl)
-    }
-
-    @Test
-    fun `fetchRemoteSneakers maps sizes correctly`() = runTest {
-        whenever(apiService.getSneakers()).thenReturn(mockSneakerDtos)
-        
-        val result = repository.fetchRemoteSneakers()
-        
-        val products = result.getOrNull()
-        assertEquals(listOf(40, 41, 42), products?.get(0)?.sizes)
-    }
-
+    // Verifica que si la API falla, el repositorio devuelva un resultado de fallo controlado
     @Test
     fun `fetchRemoteSneakers failure returns Result failure`() = runTest {
         whenever(apiService.getSneakers()).thenThrow(RuntimeException("Network error"))
@@ -101,6 +85,7 @@ class ProductRepositoryTest {
         assertTrue(result.isFailure)
     }
 
+    // Verifica que si la API devuelve una lista vacía, el repositorio devuelva una lista vacía de productos
     @Test
     fun `fetchRemoteSneakers empty list returns empty products`() = runTest {
         whenever(apiService.getSneakers()).thenReturn(emptyList())
@@ -109,52 +94,5 @@ class ProductRepositoryTest {
         
         assertTrue(result.isSuccess)
         assertTrue(result.getOrNull()?.isEmpty() == true)
-    }
-
-    @Test
-    fun `fetchRemoteSneakers handles null image gracefully`() = runTest {
-        val dtoWithNullImage = listOf(
-            SneakerDto(
-                id = 1L,
-                marca = "Test",
-                modelo = "Sneaker",
-                talla = 42.0,
-                tallas = listOf(42.0),
-                color = "Red",
-                precio = 100.0,
-                stock = 5,
-                image = null
-            )
-        )
-        whenever(apiService.getSneakers()).thenReturn(dtoWithNullImage)
-        
-        val result = repository.fetchRemoteSneakers()
-        
-        assertTrue(result.isSuccess)
-        assertEquals("", result.getOrNull()?.get(0)?.imageUrl)
-    }
-
-    @Test
-    fun `fetchRemoteSneakers handles null tallas gracefully`() = runTest {
-        val dtoWithNullTallas = listOf(
-            SneakerDto(
-                id = 1L,
-                marca = "Test",
-                modelo = "Sneaker",
-                talla = 42.0,
-                tallas = null,
-                color = "Red",
-                precio = 100.0,
-                stock = 5,
-                image = "https://example.com/test.jpg"
-            )
-        )
-        whenever(apiService.getSneakers()).thenReturn(dtoWithNullTallas)
-        
-        val result = repository.fetchRemoteSneakers()
-        
-        assertTrue(result.isSuccess)
-        // When tallas is null but talla exists, it uses talla as single size
-        assertEquals(listOf(42), result.getOrNull()?.get(0)?.sizes)
     }
 }

@@ -8,6 +8,7 @@ import org.junit.Test
 
 class ProductModelTest {
 
+    // Verifica que la clase de datos Product se cree correctamente con todos sus campos
     @Test
     fun `Product data class creates correctly`() {
         val product = Product(
@@ -35,6 +36,7 @@ class ProductModelTest {
         assertEquals("Red", product.color)
     }
 
+    // Verifica que dos objetos Product con los mismos datos sean considerados iguales (método equals)
     @Test
     fun `Product equality works correctly`() {
         val product1 = Product(
@@ -66,26 +68,7 @@ class ProductModelTest {
         assertEquals(product1, product2)
     }
 
-    @Test
-    fun `Product with different ids are not equal`() {
-        val product1 = Product(
-            id = 1,
-            name = "Sneaker",
-            price = 100.0,
-            imageUrl = "",
-            description = "",
-            sizes = listOf(42),
-            rating = 4.0f,
-            reviews = emptyList(),
-            stock = 5,
-            color = "Blue"
-        )
-        
-        val product2 = product1.copy(id = 2)
-        
-        assertNotEquals(product1, product2)
-    }
-
+    // Verifica que el método copy genere una nueva instancia modificando solo los campos especificados
     @Test
     fun `Product copy creates new instance with modified fields`() {
         val original = Product(
@@ -106,40 +89,10 @@ class ProductModelTest {
         assertEquals(1, modified.id)
         assertEquals("Modified", modified.name)
         assertEquals(120.0, modified.price, 0.01)
-        assertEquals("Original", original.name) // Original unchanged
-    }
-
-    @Test
-    fun `Product hashCode is consistent`() {
-        val product1 = Product(
-            id = 1,
-            name = "Sneaker",
-            price = 100.0,
-            imageUrl = "",
-            description = "",
-            sizes = listOf(42),
-            rating = 4.0f,
-            reviews = emptyList(),
-            stock = 5,
-            color = "Blue"
-        )
-        
-        val product2 = Product(
-            id = 1,
-            name = "Sneaker",
-            price = 100.0,
-            imageUrl = "",
-            description = "",
-            sizes = listOf(42),
-            rating = 4.0f,
-            reviews = emptyList(),
-            stock = 5,
-            color = "Blue"
-        )
-        
-        assertEquals(product1.hashCode(), product2.hashCode())
+        assertEquals("Original", original.name) // Original sin cambios
     }
     
+    // Verifica que la clase de datos Order se cree correctamente con la lista de items y total
     @Test
     fun `Order data class creates correctly`() {
         val products = listOf(

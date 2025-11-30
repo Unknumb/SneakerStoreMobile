@@ -43,9 +43,11 @@ fun ProductDetailScreen(
     val scope = rememberCoroutineScope()
     val selectedSize = remember { mutableStateOf<Int?>(null) }
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
+    val usdFormat = NumberFormat.getCurrencyInstance(Locale.US)
     val username by userViewModel.username.collectAsState()
     val favorites by userViewModel.favorites.collectAsState()
     val isFavorite = favorites.contains(product.id)
+    val dolarValue by viewModel.dolarValue.collectAsState()
 
     // Mostrar aviso de login requerido para favoritos
     LaunchedEffect(Unit) {
@@ -98,10 +100,21 @@ fun ProductDetailScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = product.name, style = MaterialTheme.typography.headlineLarge)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = clpFormat.format(product.price),
-                            style = MaterialTheme.typography.titleLarge
-                        )
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = clpFormat.format(product.price),
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            if (dolarValue != null) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                val priceInUsd = product.price / dolarValue!!
+                                Text(
+                                    text = "(${usdFormat.format(priceInUsd)})",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Color: ${product.color}",

@@ -7,6 +7,7 @@ import org.junit.Test
 
 class SneakerMapperTest {
 
+    // Verifica que la función de extensión toProduct mapee correctamente todos los campos del DTO al modelo de dominio
     @Test
     fun `toProduct maps all fields correctly`() {
         val dto = SneakerDto(
@@ -27,12 +28,13 @@ class SneakerMapperTest {
         assertEquals("Nike Air Max", product.name)
         assertEquals(149.99, product.price, 0.01)
         assertEquals("Blanco", product.color)
-        assertEquals("Blanco", product.description) // color is mapped to description
+        assertEquals("Blanco", product.description) // color se usa como descripción si no hay más info
         assertEquals("https://example.com/nike.jpg", product.imageUrl)
         assertEquals(listOf(40, 41, 42, 43), product.sizes)
         assertEquals(10, product.stock)
     }
     
+    // Verifica que los campos nuevos 'stock' y 'color' se transfieran correctamente
     @Test
     fun `toProduct maps stock and color correctly`() {
         val dto = SneakerDto(
@@ -53,6 +55,7 @@ class SneakerMapperTest {
         assertEquals("Rojo", product.color)
     }
     
+    // Verifica que si el color viene nulo desde el backend, se asigne un valor por defecto
     @Test
     fun `toProduct uses default color when null`() {
         val dto = SneakerDto(

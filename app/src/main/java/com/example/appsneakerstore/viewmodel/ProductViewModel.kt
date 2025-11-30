@@ -2,6 +2,7 @@ package com.example.appsneakerstore.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appsneakerstore.data.remote.RetrofitClient
 import com.example.appsneakerstore.data.repository.ProductRepository
 import com.example.appsneakerstore.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,9 +19,11 @@ class ProductViewModel(
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
+    private val _dolarValue = MutableStateFlow<Double?>(null)
 
     val products: StateFlow<List<Product>> = _products.asStateFlow()
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    val dolarValue: StateFlow<Double?> = _dolarValue.asStateFlow()
 
     val filteredProducts: StateFlow<List<Product>> = _products
         .combine(_searchQuery) { products, query ->
@@ -43,8 +46,8 @@ class ProductViewModel(
     val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
 
     init {
-        // Cargar productos desde el backend
         refreshFromBackend()
+        fetchDolarValue()
     }
 
     private fun loadProducts() {
@@ -58,6 +61,18 @@ class ProductViewModel(
                 if (remoteList.isNotEmpty()) {
                     _products.value = remoteList
                 }
+            }
+        }
+    }
+
+    private fun fetchDolarValue() {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.mindicatorApi.getIndicators()
+                _dolarValue.value = response.dolar.valor
+            } catch (e: Exception) {
+                // Manejar error o dejar null
+                e.printStackTrace()
             }
         }
     }
