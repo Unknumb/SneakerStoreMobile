@@ -106,9 +106,15 @@ fun HomeScreen(
                         Text("Sneaker Store", style = MaterialTheme.typography.titleLarge)
                     }
                 },
+                actions = {
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(Icons.Filled.Favorite, contentDescription = "Favoritos")
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.White,
-                    titleContentColor = Color.Black
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Black
                 )
             )
         },

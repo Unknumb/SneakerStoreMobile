@@ -93,6 +93,18 @@ fun ProductDetailScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
+                            text = "Color: ${product.color}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Stock disponible: ${product.stock}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (product.stock > 0) Color.Black else Color.Red
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
                             text = product.description,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -134,10 +146,13 @@ fun ProductDetailScreen(
                                 }
                             },
                             modifier = Modifier.fillMaxWidth().height(56.dp),
-                            enabled = selectedSize.value != null,
+                            enabled = selectedSize.value != null && product.stock > 0,
                             shape = MaterialTheme.shapes.medium
                         ) {
-                            Text("Agregar al carrito", style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                text = if (product.stock > 0) "Agregar al carrito" else "Agotado",
+                                style = MaterialTheme.typography.labelLarge
+                            )
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         Text("Reseñas", style = MaterialTheme.typography.headlineSmall)

@@ -5,6 +5,8 @@ import android.location.Geocoder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -58,14 +60,19 @@ fun CheckoutScreen(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             if (isGranted) {
-                locationClient.lastLocation.addOnSuccessListener { location ->
-                    if (location != null) {
-                        val geocoder = Geocoder(context, Locale.getDefault())
-                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                        if (addresses?.isNotEmpty() == true) {
-                            address = addresses[0].getAddressLine(0)
+                try {
+                    locationClient.lastLocation.addOnSuccessListener { location ->
+                        if (location != null) {
+                            val geocoder = Geocoder(context, Locale.getDefault())
+                            @Suppress("DEPRECATION")
+                            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                            if (addresses?.isNotEmpty() == true) {
+                                address = addresses[0].getAddressLine(0)
+                            }
                         }
                     }
+                } catch (e: SecurityException) {
+                    // Handle exception
                 }
             }
         }
@@ -88,6 +95,7 @@ fun CheckoutScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre Completo") }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(8.dp))
@@ -117,7 +125,7 @@ fun CheckoutScreen(
                 Text("Autocompletar con GPS")
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Datos de Pago (Opcional)", style = MaterialTheme.typography.titleLarge)
+            Text("Datos de Pago", style = MaterialTheme.typography.titleLarge)
             OutlinedTextField(value = cardNumber, onValueChange = { cardNumber = it }, label = { Text("Número de Tarjeta") }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth()) {

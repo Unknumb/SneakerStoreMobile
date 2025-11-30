@@ -19,6 +19,8 @@ fun SneakerDto.toProduct(): Product {
         description = this.color ?: "Sin descripción",
         sizes = sizesList,
         rating = 4.5f,
-        reviews = emptyList<Review>()
+        reviews = emptyList<Review>(),
+        stock = this.stock,
+        color = this.color ?: "No especificado"
     )
 }

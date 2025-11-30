@@ -16,7 +16,9 @@ object MockData {
             reviews = listOf(
                 Review("Juan Pérez", 4.0f, "¡Me encantan! Súper cómodas y el color es increíble."),
                 Review("María García", 5.0f, "Las mejores zapatillas que he tenido. Totalmente recomendadas.")
-            )
+            ),
+            stock = 10,
+            color = "Verde"
         ),
         Product(
             id = 2,
@@ -29,7 +31,9 @@ object MockData {
             reviews = listOf(
                 Review("Carlos Sánchez", 5.0f, "Un clásico que nunca falla. La calidad es excelente."),
                 Review("Ana Martínez", 4.5f, "Muy buen producto, aunque la caja llegó un poco dañada.")
-            )
+            ),
+            stock = 5,
+            color = "Negro"
         ),
         Product(
             id = 3,
@@ -42,7 +46,9 @@ object MockData {
             reviews = listOf(
                 Review("Sofía López", 4.0f, "Son muy bonitas, pero un poco rígidas al principio."),
                 Review("Javier Torres", 4.5f, "Me gustan mucho, pero la talla es un poco más grande de lo normal.")
-            )
+            ),
+            stock = 8,
+            color = "Café"
         ),
         Product(
             id = 4,
@@ -55,7 +61,9 @@ object MockData {
             reviews = listOf(
                 Review("Lucía Fernández", 5.0f, "¡Impresionantes! El diseño es único y son muy cómodas."),
                 Review("David González", 4.0f, "Me gustan, pero el color es un poco más oscuro de lo que esperaba.")
-            )
+            ),
+            stock = 12,
+            color = "Multicolor"
         ),
         Product(
             id = 5,
@@ -68,7 +76,9 @@ object MockData {
             reviews = listOf(
                 Review("Elena Ruiz", 4.5f, "Muy cómodas para correr, las recomiendo."),
                 Review("Pablo Jiménez", 4.0f, "Buenas zapatillas, pero el diseño no me convence del todo.")
-            )
+            ),
+            stock = 7,
+            color = "Azul"
         ),
         Product(
             id = 6,
@@ -81,7 +91,9 @@ object MockData {
             reviews = listOf(
                 Review("Laura Navarro", 5.0f, "¡Las mejores zapatillas que he comprado en mucho tiempo! Súper exclusivas."),
                 Review("Sergio Romero", 4.8f, "Un poco caras, pero la calidad lo vale.")
-            )
+            ),
+            stock = 3,
+            color = "Blanco"
         )
     )
 }

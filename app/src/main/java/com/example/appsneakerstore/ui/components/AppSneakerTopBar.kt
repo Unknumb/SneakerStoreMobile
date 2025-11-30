@@ -68,10 +68,8 @@ fun AppSneakerTopBar(
                     Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito")
                 }
             }
-            if (username != null) {
-                IconButton(onClick = onFavoritesClick) {
-                    Icon(Icons.Filled.Favorite, contentDescription = "Favoritos")
-                }
+            IconButton(onClick = onFavoritesClick) {
+                Icon(Icons.Filled.Favorite, contentDescription = "Favoritos")
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

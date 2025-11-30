@@ -45,9 +45,6 @@ class ProductViewModel(
     init {
         // Cargar productos desde el backend
         refreshFromBackend()
-        
-        // Datos locales desactivados (solo para pruebas si el backend no funciona)
-        // loadProducts()
     }
 
     private fun loadProducts() {
@@ -62,7 +59,6 @@ class ProductViewModel(
                     _products.value = remoteList
                 }
             }
-            // onFailure: podrías mostrar un snackbar / log si quieres
         }
     }
 
@@ -77,8 +73,12 @@ class ProductViewModel(
 
     fun addToCart(product: Product) {
         val currentMap = _cartItems.value.toMutableMap()
-        currentMap[product] = (currentMap[product] ?: 0) + 1
-        _cartItems.value = currentMap
+        val currentQuantity = currentMap[product] ?: 0
+        
+        if (currentQuantity < product.stock) {
+            currentMap[product] = currentQuantity + 1
+            _cartItems.value = currentMap
+        }
     }
 
     fun removeFromCart(product: Product) {

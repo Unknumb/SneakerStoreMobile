@@ -8,7 +8,9 @@ data class Product(
     val description: String,
     val sizes: List<Int>,
     val rating: Float,
-    val reviews: List<Review>
+    val reviews: List<Review>,
+    val stock: Int,
+    val color: String
 )
 
 data class Review(

@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -82,7 +83,17 @@ fun CartScreen(
                     items(cartMap.entries.toList()) { (product, quantity) ->
                         ListItem(
                             headlineContent = { Text(product.name, fontWeight = FontWeight.Bold) },
-                            supportingContent = { Text("${clpFormat.format(product.price)} x $quantity") },
+                            supportingContent = { 
+                                Column {
+                                    Text("${clpFormat.format(product.price)} x $quantity")
+                                    Text("Color: ${product.color}", style = MaterialTheme.typography.bodySmall)
+                                    Text(
+                                        "Stock: ${product.stock}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (quantity >= product.stock) Color.Red else Color.Gray
+                                    )
+                                }
+                            },
                             leadingContent = {
                                 AsyncImage(
                                     model = product.imageUrl,
@@ -97,7 +108,10 @@ fun CartScreen(
                                         Icon(Icons.Default.Remove, contentDescription = "Restar uno")
                                     }
                                     Text(quantity.toString())
-                                    IconButton(onClick = { viewModel.addToCart(product) }) {
+                                    IconButton(
+                                        onClick = { viewModel.addToCart(product) },
+                                        enabled = quantity < product.stock
+                                    ) {
                                         Icon(Icons.Default.Add, contentDescription = "Sumar uno")
                                     }
                                     IconButton(onClick = { viewModel.removeItemFromCart(product) }) {
