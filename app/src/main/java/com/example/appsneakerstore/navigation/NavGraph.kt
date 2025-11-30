@@ -57,7 +57,8 @@ fun NavGraph() {
                 onFavoritesClick = { navController.navigate("favorites") },
                 onProfileClick = { navController.navigate("profile") },
                 onLoginClick = { navController.navigate("login") },
-                onSearchClick = { navController.navigate("search") }
+                onSearchClick = { navController.navigate("search") },
+                onRegisterClick = { navController.navigate("register") }
             )
         }
 
