@@ -42,6 +42,9 @@ class ProductViewModel(
     private val _cartItems = MutableStateFlow<Map<Product, Int>>(emptyMap())
     val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
 
+    private val _recentlyViewed = MutableStateFlow<List<Product>>(emptyList())
+    val recentlyViewed: StateFlow<List<Product>> = _recentlyViewed.asStateFlow()
+
     init {
         // Cargar productos desde el backend
         refreshFromBackend()
@@ -73,6 +76,19 @@ class ProductViewModel(
     fun selectProduct(productId: Int) {
         val product = _products.value.find { it.id == productId }
         _selectedProduct.value = product
+        
+        // Agregar a recientemente vistos
+        product?.let { addToRecentlyViewed(it) }
+    }
+
+    private fun addToRecentlyViewed(product: Product) {
+        val current = _recentlyViewed.value.toMutableList()
+        // Remover si ya existe para evitar duplicados
+        current.removeAll { it.id == product.id }
+        // Agregar al inicio
+        current.add(0, product)
+        // Mantener solo los últimos 10
+        _recentlyViewed.value = current.take(10)
     }
 
     fun addToCart(product: Product) {

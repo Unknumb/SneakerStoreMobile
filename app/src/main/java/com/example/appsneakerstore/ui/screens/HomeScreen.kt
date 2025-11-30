@@ -3,9 +3,12 @@ package com.example.appsneakerstore.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items as lazyItems
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
@@ -48,6 +51,7 @@ fun HomeScreen(
     onRegisterClick: () -> Unit = {}
 ) {
     val productList by viewModel.filteredProducts.collectAsState()
+    val recentlyViewed by viewModel.recentlyViewed.collectAsState()
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
     val favorites by userViewModel.favorites.collectAsState()
     val currentUser by userViewModel.username.collectAsState()
@@ -90,28 +94,6 @@ fun HomeScreen(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.logosn),
-                            contentDescription = "Logo",
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Sneaker Store", style = MaterialTheme.typography.titleLarge)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
-                )
-            )
-        },
         bottomBar = {
             AppBottomBar(
                 currentRoute = "home",
@@ -123,64 +105,118 @@ fun HomeScreen(
             )
         }
     ) { paddingValues ->
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(productList) { product ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                viewModel.selectProduct(product.id)
-                                onProductClick(product.id)
-                            },
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Box {
-                            Column {
-                                AsyncImage(
-                                    model = product.imageUrl,
-                                    contentDescription = product.name,
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 8.dp),
+            contentPadding = PaddingValues(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Sección "Recientemente vistos" (ocupa 2 columnas)
+            if (recentlyViewed.isNotEmpty()) {
+                item(span = { GridItemSpan(2) }) {
+                    Column {
+                        Text(
+                            text = "Recientemente vistos",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            lazyItems(recentlyViewed) { product ->
+                                Card(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .aspectRatio(1f)
-                                        .background(Color.LightGray.copy(alpha = 0.3f)),
-                                    contentScale = ContentScale.Fit,
-                                    error = painterResource(id = android.R.drawable.ic_menu_gallery),
-                                    placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
-                                )
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = product.name,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = clpFormat.format(product.price),
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                        .width(140.dp)
+                                        .clickable {
+                                            viewModel.selectProduct(product.id)
+                                            onProductClick(product.id)
+                                        },
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                                ) {
+                                    Column {
+                                        AsyncImage(
+                                            model = product.imageUrl,
+                                            contentDescription = product.name,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .aspectRatio(1f)
+                                                .background(Color.LightGray.copy(alpha = 0.3f)),
+                                            contentScale = ContentScale.Fit
+                                        )
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text(
+                                                text = product.name,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                maxLines = 1
+                                            )
+                                            Text(
+                                                text = clpFormat.format(product.price),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
                                 }
                             }
-                            if (favorites.contains(product.id)) {
-                                Icon(
-                                    imageVector = Icons.Default.Favorite,
-                                    contentDescription = "Favorite",
-                                    tint = Color.Red,
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(8.dp)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
+
+            // Grid de todos los productos
+            items(productList) { product ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            viewModel.selectProduct(product.id)
+                            onProductClick(product.id)
+                        },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Box {
+                        Column {
+                            AsyncImage(
+                                model = product.imageUrl,
+                                contentDescription = product.name,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
+                                    .background(Color.LightGray.copy(alpha = 0.3f)),
+                                contentScale = ContentScale.Fit,
+                                error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                                placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
+                            )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = product.name,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = clpFormat.format(product.price),
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             }
+                        }
+                        if (favorites.contains(product.id)) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = "Favorite",
+                                tint = Color.Red,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                            )
                         }
                     }
                 }
             }
+        }
     }
 
     // Modal Bottom Sheet para Login

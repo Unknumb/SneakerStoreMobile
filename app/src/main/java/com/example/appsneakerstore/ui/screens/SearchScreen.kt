@@ -104,19 +104,15 @@ fun SearchScreen(
     Scaffold(
         topBar = {
             Column(
-                modifier = Modifier.pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        focusManager.clearFocus()
-                    })
-                }
+                modifier = Modifier
+                    .background(Color.White)
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                        })
+                    }
             ) {
-                CenterAlignedTopAppBar(
-                    title = { Text("Buscar", style = MaterialTheme.typography.titleLarge) },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.White,
-                        titleContentColor = Color.Black
-                    )
-                )
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 // Campo de búsqueda con estilo OutlinedTextField
                 OutlinedTextField(

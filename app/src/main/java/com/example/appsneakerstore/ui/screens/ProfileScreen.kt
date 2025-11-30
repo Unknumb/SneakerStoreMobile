@@ -37,11 +37,6 @@ fun ProfileScreen(
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mi Cuenta") }
-            )
-        },
         bottomBar = {
             AppBottomBar(
                 currentRoute = "profile",

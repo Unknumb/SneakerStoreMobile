@@ -41,16 +41,6 @@ fun CartScreen(
     val currentUser by userViewModel.username.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("CARRITO") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                }
-            )
-        },
         bottomBar = {
             AppBottomBar(
                 currentRoute = "cart",
