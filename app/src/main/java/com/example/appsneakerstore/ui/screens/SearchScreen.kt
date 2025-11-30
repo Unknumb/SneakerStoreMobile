@@ -1,5 +1,6 @@
 package com.example.appsneakerstore.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.appsneakerstore.ui.components.AppBottomBar
@@ -135,8 +137,11 @@ fun SearchScreen(
                                 contentDescription = product.name,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .aspectRatio(1f),
-                                contentScale = ContentScale.Fit
+                                    .aspectRatio(1f)
+                                    .background(Color.LightGray.copy(alpha = 0.3f)),
+                                contentScale = ContentScale.Fit,
+                                error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                                placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
                             )
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(

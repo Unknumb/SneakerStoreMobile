@@ -43,11 +43,11 @@ class ProductViewModel(
     val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
 
     init {
-        // 1) Cargar productos locales
-        loadProducts()
-
-        // 2) Backend desactivado temporalmente (las imágenes del backend están vacías)
-        // refreshFromBackend()
+        // Cargar productos desde el backend
+        refreshFromBackend()
+        
+        // Datos locales desactivados (solo para pruebas si el backend no funciona)
+        // loadProducts()
     }
 
     private fun loadProducts() {

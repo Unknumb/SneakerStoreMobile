@@ -6,10 +6,12 @@ data class SneakerDto(
     val id: Long?,
     val marca: String,
     val modelo: String,
-    val talla: Double,
-    val color: String,
+    val talla: Double?,
+    val tallas: List<Double>?,
+    val color: String?,
     val precio: Double,
-    val stock: Int
+    val stock: Int,
+    val image: String?
 )
 
 interface SneakerApiService {

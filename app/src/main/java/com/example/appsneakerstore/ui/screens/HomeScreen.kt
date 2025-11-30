@@ -1,5 +1,6 @@
 package com.example.appsneakerstore.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -133,8 +135,11 @@ fun HomeScreen(
                                     contentDescription = product.name,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .aspectRatio(1f),
-                                    contentScale = ContentScale.Fit
+                                        .aspectRatio(1f)
+                                        .background(Color.LightGray.copy(alpha = 0.3f)),
+                                    contentScale = ContentScale.Fit,
+                                    error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                                    placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
                                 )
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
