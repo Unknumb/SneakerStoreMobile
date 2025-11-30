@@ -3,17 +3,20 @@ package com.example.appsneakerstore.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appsneakerstore.data.local.SessionManager
 import com.example.appsneakerstore.data.repository.UserRepository
 import com.example.appsneakerstore.model.Order
 import com.example.appsneakerstore.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = UserRepository(application)
+    private val sessionManager = SessionManager(application)
 
     private val _username = MutableStateFlow<String?>(null)
     val username: StateFlow<String?> = _username.asStateFlow()
@@ -33,6 +36,25 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _hasShownLoginPopup = MutableStateFlow(false)
     val hasShownLoginPopup: StateFlow<Boolean> = _hasShownLoginPopup.asStateFlow()
 
+    init {
+        // Restaurar sesión y favoritos al iniciar
+        viewModelScope.launch {
+            // Restaurar usuario logueado
+            sessionManager.loggedInUsername.collect { savedUsername ->
+                if (savedUsername != null && _username.value == null) {
+                    _username.value = savedUsername
+                    _hasShownLoginPopup.value = true // No mostrar popup si ya está logueado
+                }
+            }
+        }
+        viewModelScope.launch {
+            // Restaurar favoritos
+            sessionManager.favorites.collect { savedFavorites ->
+                _favorites.value = savedFavorites
+            }
+        }
+    }
+
     fun markLoginPopupShown() {
         _hasShownLoginPopup.value = true
     }
@@ -43,6 +65,8 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                 if (it?.password == password) {
                     _username.value = username
                     _loginError.value = null
+                    // Guardar sesión en DataStore
+                    sessionManager.saveSession(username)
                 } else {
                     _loginError.value = "Usuario o contraseña incorrectos"
                 }
@@ -65,6 +89,11 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
             currentFavorites.add(productId)
         }
         _favorites.value = currentFavorites
+        
+        // Guardar favoritos en DataStore
+        viewModelScope.launch {
+            sessionManager.saveFavorites(currentFavorites)
+        }
     }
 
     fun addOrder(order: Order) {
@@ -76,7 +105,12 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         _username.value = null
         _orders.value = emptyList()
-        _favorites.value = emptySet()
+        // No borrar favoritos al cerrar sesión (pueden ser favoritos del dispositivo)
+        
+        // Limpiar sesión en DataStore
+        viewModelScope.launch {
+            sessionManager.clearSession()
+        }
     }
 
     fun clearRegistrationSuccess() {

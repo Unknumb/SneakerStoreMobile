@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -308,14 +309,18 @@ fun SearchScreen(
                                 )
                             }
                         }
-                        if (favorites.contains(product.id)) {
+                        // Botón de favorito (siempre visible, tocable)
+                        IconButton(
+                            onClick = { userViewModel.toggleFavorite(product.id) },
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = "Favorite",
-                                tint = Color.Red,
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(8.dp)
+                                imageVector = if (favorites.contains(product.id)) 
+                                    Icons.Default.Favorite 
+                                else 
+                                    Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorito",
+                                tint = if (favorites.contains(product.id)) Color.Red else Color.Gray
                             )
                         }
                     }
