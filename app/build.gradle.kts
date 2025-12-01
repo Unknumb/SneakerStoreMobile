@@ -19,9 +19,26 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // --- AGREGAR ESTE BLOQUE DE FIRMA ---
+    signingConfigs {
+        create("release") {
+            // IMPORTANTE: Verificar que el archivo .jks esté realmente en la carpeta 'app/release'
+            storeFile = file("release/keysneaker.jks")
+            storePassword = "sneaker123"
+            keyAlias = "keySneaker"
+            keyPassword = "sneaker123"
+        }
+    }
+    // ------------------------------------
+
     buildTypes {
         release {
             isMinifyEnabled = false
+
+         // FIRMA
+            signingConfig = signingConfigs.getByName("release")
+            // -------------------------------------------------
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
