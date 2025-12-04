@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,11 +44,11 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onFavoritesClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onLoginClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {}
 ) {
     val productList by viewModel.filteredProducts.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val clpFormat = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CL"))
     val favorites by userViewModel.favorites.collectAsState()
     val currentUser by userViewModel.username.collectAsState()
@@ -61,10 +62,9 @@ fun HomeScreen(
     // Snackbar host state para mensajes
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Marcar como mostrado si el usuario navega a otra pantalla (usando DisposableEffect)
+    // Marcar como mostrado si el usuario navega a otra pantalla
     androidx.compose.runtime.DisposableEffect(Unit) {
         onDispose {
-            // Si el usuario sale de Home antes de los 3 segundos, marcar como mostrado
             if (!hasShownLoginPopup) {
                 userViewModel.markLoginPopupShown()
             }
@@ -72,10 +72,22 @@ fun HomeScreen(
     }
 
     // Mostrar login después de 3 segundos si no hay usuario logueado y es la primera vez
+    // Se simplifica la lógica para evitar warnings sobre condiciones redundantes
     LaunchedEffect(Unit) {
         if (!hasShownLoginPopup && currentUser == null) {
             delay(3000)
-            if (currentUser == null && !hasShownLoginPopup) {
+            // Verificamos nuevamente si aún no hay usuario y no se ha mostrado el popup
+            // Usamos los valores actuales directamente del ViewModel si es posible o confiamos
+            // en que el estado no ha cambiado drásticamente en el delay.
+            // Para ser más reactivos, deberíamos observar el estado, pero dentro de este bloque
+            // suspendido, accedemos a los valores capturados o necesitamos una fuente de verdad.
+            // Como 'currentUser' y 'hasShownLoginPopup' son estados capturados al inicio del efecto,
+            // no reflejan cambios durante el delay.
+            // La mejor forma es chequear los valores actuales del viewmodel o recomponer.
+            // Sin embargo, para corregir el warning de "always true", entendemos que el compilador
+            // ve las variables locales inmutables.
+            // La lógica correcta aquí sería:
+            if (userViewModel.username.value == null && !userViewModel.hasShownLoginPopup.value) {
                 userViewModel.markLoginPopupShown()
                 showLoginSheet.value = true
             }
@@ -148,63 +160,89 @@ fun HomeScreen(
                 productViewModel = viewModel
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.refreshProducts() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(Icons.Filled.Refresh, contentDescription = "Refrescar")
+            }
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(productList) { product ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                viewModel.selectProduct(product.id)
-                                onProductClick(product.id)
-                            },
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Box {
-                            Column {
-                                AsyncImage(
-                                    model = product.imageUrl,
-                                    contentDescription = product.name,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .aspectRatio(1f)
-                                        .background(Color.LightGray.copy(alpha = 0.3f)),
-                                    contentScale = ContentScale.Fit,
-                                    error = painterResource(id = android.R.drawable.ic_menu_gallery),
-                                    placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
-                                )
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = product.name,
-                                        style = MaterialTheme.typography.titleMedium
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(productList) { product ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.selectProduct(product.id)
+                                    onProductClick(product.id)
+                                },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        ) {
+                            Box {
+                                Column {
+                                    AsyncImage(
+                                        model = product.imageUrl,
+                                        contentDescription = product.name,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .aspectRatio(1f)
+                                            .background(Color.LightGray.copy(alpha = 0.3f)),
+                                        contentScale = ContentScale.Fit,
+                                        error = painterResource(id = android.R.drawable.ic_menu_gallery),
+                                        placeholder = painterResource(id = android.R.drawable.ic_menu_gallery)
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = clpFormat.format(product.price),
-                                        style = MaterialTheme.typography.bodyMedium
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            text = product.name,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = clpFormat.format(product.price),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                }
+                                if (favorites.contains(product.id)) {
+                                    Icon(
+                                        imageVector = Icons.Default.Favorite,
+                                        contentDescription = "Favorite",
+                                        tint = Color.Red,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(8.dp)
                                     )
                                 }
                             }
-                            if (favorites.contains(product.id)) {
-                                Icon(
-                                    imageVector = Icons.Default.Favorite,
-                                    contentDescription = "Favorite",
-                                    tint = Color.Red,
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(8.dp)
-                                )
-                            }
                         }
+                    }
+                }
+
+                // Loading Indicator Overlay
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f))
+                            .clickable(enabled = false) {}, // Block clicks underneath
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(48.dp)
+                        )
                     }
                 }
             }

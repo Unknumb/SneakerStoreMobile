@@ -20,10 +20,12 @@ class ProductViewModel(
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     private val _searchQuery = MutableStateFlow("")
     private val _dolarValue = MutableStateFlow<Double?>(null)
+    private val _isLoading = MutableStateFlow(false)
 
     val products: StateFlow<List<Product>> = _products.asStateFlow()
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     val dolarValue: StateFlow<Double?> = _dolarValue.asStateFlow()
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val filteredProducts: StateFlow<List<Product>> = _products
         .combine(_searchQuery) { products, query ->
@@ -46,7 +48,7 @@ class ProductViewModel(
     val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
 
     init {
-        refreshFromBackend()
+        refreshProducts()
         fetchDolarValue()
     }
 
@@ -54,14 +56,16 @@ class ProductViewModel(
         _products.value = repository.getLocalProducts()
     }
 
-    fun refreshFromBackend() {
+    fun refreshProducts() {
         viewModelScope.launch {
+            _isLoading.value = true
             val result = repository.fetchRemoteSneakers()
             result.onSuccess { remoteList ->
                 if (remoteList.isNotEmpty()) {
                     _products.value = remoteList
                 }
             }
+            _isLoading.value = false
         }
     }
 
